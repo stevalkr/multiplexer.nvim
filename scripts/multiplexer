@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+export MULTIPLEXER=1
+
+get_vim_direction() {
+    case $1 in
+        left) echo 'h'
+        ;;
+        down) echo 'j'
+        ;;
+        up) echo 'k'
+        ;;
+        right) echo 'l'
+        ;;
+        *) return 1
+        ;;
+    esac
+}
+
+activate_pane() {
+    local dir=$(get_vim_direction "$1")
+    if [ -z "$dir" ]; then
+        return 1
+    fi
+    nvim --headless -c ":lua require('multiplexer').activate_pane('$dir')" -c ":qa"
+}
+
+resize_pane() {
+    local dir=$(get_vim_direction "$1")
+    if [ -z "$dir" ]; then
+        return 1
+    fi
+    nvim --headless -c ":lua require('multiplexer').resize_pane('$dir')" -c ":qa"
+}
+
+"$1" "$2"

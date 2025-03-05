@@ -1,0 +1,17 @@
+multiplexer-cli-support	multiplexer.txt	/*multiplexer-cli-support*
+multiplexer-configuration	multiplexer.txt	/*multiplexer-configuration*
+multiplexer-contributing	multiplexer.txt	/*multiplexer-contributing*
+multiplexer-features	multiplexer.txt	/*multiplexer-features*
+multiplexer-install	multiplexer.txt	/*multiplexer-install*
+multiplexer-kitty	multiplexer.txt	/*multiplexer-kitty*
+multiplexer-lua-api	multiplexer.txt	/*multiplexer-lua-api*
+multiplexer-multiplexer.nvim	multiplexer.txt	/*multiplexer-multiplexer.nvim*
+multiplexer-neovim	multiplexer.txt	/*multiplexer-neovim*
+multiplexer-plan	multiplexer.txt	/*multiplexer-plan*
+multiplexer-table-of-contents	multiplexer.txt	/*multiplexer-table-of-contents*
+multiplexer-tmux	multiplexer.txt	/*multiplexer-tmux*
+multiplexer-usage	multiplexer.txt	/*multiplexer-usage*
+multiplexer-wezterm	multiplexer.txt	/*multiplexer-wezterm*
+multiplexer-what-it-is	multiplexer.txt	/*multiplexer-what-it-is*
+multiplexer-what-it-is-not	multiplexer.txt	/*multiplexer-what-it-is-not*
+multiplexer.txt	multiplexer.txt	/*multiplexer.txt*
