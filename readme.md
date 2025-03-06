@@ -13,6 +13,13 @@ This plugin was created based on my personal config. Any contributions or sugges
 - **Basic Functionalities**: Split panes, get current active pane and so on using the plugin's Lua API.
 - **Dry Run**: An experimental dry run mode
 
+### Supported
+
+- Neovim
+- Tmux
+- WezTerm
+- Kitty
+
 ### What It Is
 
 A lightweight plugin inspired by the multiplexer support in [smart-splits.nvim](https://github.com/mrjones2014/smart-splits.nvim), but with a focus on integrating multiple multiplexers rather than enhancing Neovim's native window behavior.
@@ -24,7 +31,8 @@ A "smart split" plugin for Neovim. Features like edge wrapping or advanced split
 ## Plan
 
 - send-text
-- i3 support?
+- zellij support
+- i3-wm support?
 - independent of neovim
 
 ## Install

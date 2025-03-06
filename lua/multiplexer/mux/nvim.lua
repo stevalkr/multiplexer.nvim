@@ -72,12 +72,12 @@ multiplexer_mux_nvim.resize_pane = function(direction, amount, opt)
     end
   end
 
-  local str = (amount < 0 and '-' or '+') .. tostring(math.abs(amount))
+  local n = (amount < 0 and '-' or '+') .. tostring(math.abs(amount))
   local cmd
   if direction == 'h' or direction == 'l' then
-    cmd = string.format('vertical resize %s', str)
+    cmd = string.format('vertical resize %s', n)
   else
-    cmd = string.format('resize %s', str)
+    cmd = string.format('resize %s', n)
   end
   vim.cmd(cmd)
 

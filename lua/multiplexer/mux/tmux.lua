@@ -1,3 +1,5 @@
+local utils = require('multiplexer.utils')
+
 ---@class multiplexer.mux
 local multiplexer_mux_tmux = {}
 
@@ -42,16 +44,17 @@ multiplexer_mux_tmux.current_pane_id = function(opt)
     io.stdout:write(table.concat(command, ' ') .. '\n')
     return
   end
-  local ret = vim.system(command, { text = true }):wait()
-  if ret.code ~= 0 then
-    vim.notify('Failed to get pane id\n' .. ret.stderr, vim.log.levels.ERROR)
-    return
-  end
-  ret.stdout = vim.trim(ret.stdout)
-  if #ret.stdout == 0 then
-    return
-  end
-  return ret.stdout
+  return utils.exec(command, function(p)
+    if p.code ~= 0 then
+      vim.notify('Failed to get pane id\n' .. p.stderr, vim.log.levels.ERROR)
+      return
+    end
+    p.stdout = vim.trim(p.stdout)
+    if #p.stdout == 0 then
+      return
+    end
+    return p.stdout
+  end, { async = false })
 end
 
 ---@param direction? direction
@@ -66,7 +69,7 @@ multiplexer_mux_tmux.activate_pane = function(direction, opt)
   if apply_opt(command, opt) then
     return
   end
-  vim.system(command, { text = true }, function(p)
+  utils.exec(command, function(p)
     if p.code ~= 0 then
       vim.schedule(function()
         vim.notify('Failed to move to pane ' .. (direction or '') .. '\n' .. p.stderr, vim.log.levels.ERROR)
@@ -86,7 +89,7 @@ multiplexer_mux_tmux.resize_pane = function(direction, amount, opt)
   if apply_opt(command, opt) then
     return
   end
-  vim.system(command, { text = true }, function(p)
+  utils.exec(command, function(p)
     if p.code ~= 0 then
       vim.schedule(function()
         vim.notify('Failed to resize pane ' .. direction .. ' by ' .. amount .. '\n' .. p.stderr,
@@ -112,7 +115,7 @@ multiplexer_mux_tmux.split_pane = function(direction, opt)
   if apply_opt(command, opt) then
     return
   end
-  vim.system(command, { text = true }, function(p)
+  utils.exec(command, function(p)
     if p.code ~= 0 then
       vim.schedule(function()
         vim.notify('Failed to split pane ' .. direction .. '\n' .. p.stderr,
@@ -130,12 +133,13 @@ multiplexer_mux_tmux.is_blocked_on = function(direction, opt)
   if apply_opt(command, opt) then
     return
   end
-  local ret = vim.system(command, { text = true }):wait()
-  if ret.code ~= 0 then
-    vim.notify('Failed to list panes\n' .. ret.stderr, vim.log.levels.ERROR)
-    return
-  end
-  return #ret.stdout ~= 0
+  return utils.exec(command, function(p)
+    if p.code ~= 0 then
+      vim.notify('Failed to list panes\n' .. p.stderr, vim.log.levels.ERROR)
+      return
+    end
+    return #p.stdout ~= 0
+  end, { async = false })
 end
 
 ---@param opt? multiplexer.opt
@@ -145,12 +149,13 @@ multiplexer_mux_tmux.is_zoomed = function(opt)
   if apply_opt(command, opt) then
     return
   end
-  local ret = vim.system(command, { text = true }):wait()
-  if ret.code ~= 0 then
-    vim.notify('Failed to check zoomed\n' .. ret.stderr, vim.log.levels.ERROR)
-    return
-  end
-  return #ret.stdout ~= 0
+  return utils.exec(command, function(p)
+    if p.code ~= 0 then
+      vim.notify('Failed to check zoomed\n' .. p.stderr, vim.log.levels.ERROR)
+      return
+    end
+    return #p.stdout ~= 0
+  end, { async = false })
 end
 
 ---@param opt? multiplexer.opt
@@ -163,17 +168,18 @@ multiplexer_mux_tmux.is_active = function(opt)
   if apply_opt(command, opt) then
     return
   end
-  local ret = vim.system(command, { text = true }):wait()
-  if ret.code ~= 0 then
-    vim.notify('Failed to check active\n' .. ret.stderr, vim.log.levels.ERROR)
-    return
-  end
-  return #ret.stdout ~= 0
+  return utils.exec(command, function(p)
+    if p.code ~= 0 then
+      vim.notify('Failed to check active\n' .. p.stderr, vim.log.levels.ERROR)
+      return
+    end
+    return #p.stdout ~= 0
+  end, { async = false })
 end
 
 local set_pane_option = function(option, value)
   local command = cmd_extend({ 'set-option', '-t', multiplexer_mux_tmux.meta.pane_id, '-p', option, value })
-  vim.system(command, { text = true }, function(p)
+  utils.exec(command, function(p)
     if p.code ~= 0 then
       vim.schedule(function()
         vim.notify('Failed to set option ' .. option .. ' to ' .. value .. '\n' .. p.stderr,

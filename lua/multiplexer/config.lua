@@ -9,11 +9,28 @@
 local config = {
   ---@type multiplexer.config
   default = {
+    -- Behavior for Neovim floating windows during navigation:
+    -- 'zoomed' => Treat as a zoomed window
+    -- 'close'  => Close the window before navigating
+    -- nil      => No special behavior
     float_win = 'zoomed',
+
+    -- Prevent navigation when the current pane is zoomed
     block_if_zoomed = true,
+
+    -- Default resize increment (in character cells)
     default_resize_amount = 1,
+
+    -- Kitty remote control password (e.g., '--password=1234' or '--password-file=/path/to/file')
+    -- See https://sw.kovidgoyal.net/kitty/remote-control/#cmdoption-kitten-password
     kitty_password = nil,
+
+    -- Enabled multiplexers (overridable by $MULTIPLEXER_LIST environment variable)
+    -- Won't load if you're not in a session
     muxes = { 'nvim', 'tmux', 'kitty', 'wezterm' },
+
+    -- Optional function to run after initialization
+    on_init = nil
   }
 }
 
