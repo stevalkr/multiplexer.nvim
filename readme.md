@@ -17,6 +17,7 @@ This plugin was created based on my personal config. Any contributions or sugges
 
 - Neovim
 - Tmux
+- Zellij (partially)
 - WezTerm
 - Kitty
 
@@ -31,7 +32,6 @@ A "smart split" plugin for Neovim. Features like edge wrapping or advanced split
 ## Plan
 
 - send-text
-- zellij support
 - i3-wm support?
 - independent of neovim
 
@@ -57,7 +57,7 @@ The plugin provides a default configuration that you can customize as needed. He
 ---@field block_if_zoomed boolean
 ---@field default_resize_amount number
 ---@field kitty_password string|nil
----@field muxes (multiplexer.mux|'nvim'|'tmux'|'kitty'|'wezterm')[]
+---@field muxes (multiplexer.mux|'nvim'|'tmux'|'zellij'|'kitty'|'wezterm')[]
 ---@field on_init? fun()
 {
   -- Behavior for Neovim floating windows during navigation:
@@ -78,7 +78,7 @@ The plugin provides a default configuration that you can customize as needed. He
 
   -- Enabled multiplexers (overridable by $MULTIPLEXER_LIST environment variable)
   -- Won't load if you're not in a session
-  muxes = { 'nvim', 'tmux', 'kitty', 'wezterm' },
+  muxes = { 'nvim', 'tmux', 'zellij', 'kitty', 'wezterm' },
 
   -- Optional function to run after initialization
   on_init = nil
@@ -334,6 +334,76 @@ end
 
 </details>
 
+### Zellij
+
+<details>
+
+Integrate with zellij (partially) by adding this to `~/.config/zellij/config.conf`:
+
+```kdl
+keybinds clear-defaults=true {
+    shared_except "locked" {
+        bind "Ctrl h" { Run "multiplexer" "activate_pane" "left" { in_place true; close_on_exit true; }; }
+        bind "Ctrl j" { Run "multiplexer" "activate_pane" "down" { in_place true; close_on_exit true; }; }
+        bind "Ctrl k" { Run "multiplexer" "activate_pane" "up" { in_place true; close_on_exit true; }; }
+        bind "Ctrl l" { Run "multiplexer" "activate_pane" "right" { in_place true; close_on_exit true; }; }
+
+        bind "Alt h" { Run "multiplexer" "resize_pane" "left" { in_place true; close_on_exit true; }; }
+        bind "Alt j" { Run "multiplexer" "resize_pane" "down" { in_place true; close_on_exit true; }; }
+        bind "Alt k" { Run "multiplexer" "resize_pane" "up" { in_place true; close_on_exit true; }; }
+        bind "Alt l" { Run "multiplexer" "resize_pane" "right" { in_place true; close_on_exit true; }; }
+    }
+}
+```
+
+For automatic detection in shell, add:
+
+bash:
+```bash
+## ~/.bashrc
+__set_user_var() {
+    if command -v base64 >/dev/null 2>&1; then
+        printf "\033]1337;SetUserVar=%s=%s\007" "$1" "$(echo -n "$2" | base64)"
+    fi
+}
+
+zellij() {
+    local ori_multiplexer_list="$MULTIPLEXER_LIST"
+    export MULTIPLEXER_LIST="zellij,$ori_multiplexer_list"
+    __set_user_var IS_ZELLIJ true
+
+    command zellij "$@"
+
+    export MULTIPLEXER_LIST="$ori_multiplexer_list"
+    __set_user_var IS_ZELLIJ false
+}
+```
+
+fish:
+```fish
+## ~/.config/fish/functions/zellij.fish
+function zellij
+    function __fish_set_user_var
+        if type -q base64
+            printf "\033]1337;SetUserVar=%s=%s\007" "$argv[1]" (echo -n "$argv[2]" | base64)
+        end
+    end
+
+    set -l ori_multiplexer_list $MULTIPLEXER_LIST
+    set -gx MULTIPLEXER_LIST "zellij,$ori_multiplexer_list"
+    __fish_set_user_var IS_ZELLIJ true
+
+    command zellij $argv
+
+    set -gx MULTIPLEXER_LIST $ori_multiplexer_list
+    __fish_set_user_var IS_ZELLIJ false
+end
+```
+
+It is recommended to use [zellij-autolock](https://github.com/fresh2dev/zellij-autolock) to automatically switches between Zellij's "Normal" and "Locked" modes. Also, please note that currently, `zellij`’s CLI support isn’t great, and you may experience screen flashes.
+
+</details>
+
 ### WezTerm
 
 <details>
@@ -345,7 +415,7 @@ Integrate with WezTerm by adding this to `~/.config/wezterm/wezterm.lua`:
 ---@param direction "left" | "down" | "up" | "right"
 local activate_pane = function(opts, direction)
   opts.action = wezterm.action_callback(function(win, pane)
-    if pane:get_user_vars().IS_NVIM == 'true' or pane:get_user_vars().IS_TMUX == 'true' then
+    if pane:get_user_vars().IS_NVIM == 'true' or pane:get_user_vars().IS_TMUX == 'true' or pane:get_user_vars().IS_ZELLIJ == 'true' then
       wezterm.background_child_process({ 'bash', '-ilc', -- For macOS users, use zsh instead
         'multiplexer activate_pane ' .. direction
       })
@@ -361,7 +431,7 @@ end
 ---@param amount? number
 local adjust_pane = function(opts, direction, amount)
   opts.action = wezterm.action_callback(function(win, pane)
-    if pane:get_user_vars().IS_NVIM == 'true' or pane:get_user_vars().IS_TMUX == 'true' then
+    if pane:get_user_vars().IS_NVIM == 'true' or pane:get_user_vars().IS_TMUX == 'true' or pane:get_user_vars().IS_ZELLIJ == 'true' then
       wezterm.background_child_process({ 'bash', '-ilc', -- For macOS users, use zsh instead
         'multiplexer resize_pane ' .. direction
       })
@@ -411,14 +481,14 @@ map ctrl+shift+j    launch --copy-env --keep-focus --type background bash -ilc "
 map ctrl+shift+k    launch --copy-env --keep-focus --type background bash -ilc "multiplexer resize_pane up"
 map ctrl+shift+l    launch --copy-env --keep-focus --type background bash -ilc "multiplexer resize_pane right"
 
-map --when-focus-on "var:IS_NVIM=true or var:IS_TMUX=true" ctrl+h no_op
-map --when-focus-on "var:IS_NVIM=true or var:IS_TMUX=true" ctrl+j no_op
-map --when-focus-on "var:IS_NVIM=true or var:IS_TMUX=true" ctrl+k no_op
-map --when-focus-on "var:IS_NVIM=true or var:IS_TMUX=true" ctrl+l no_op
-map --when-focus-on "var:IS_NVIM=true or var:IS_TMUX=true" ctrl+shift+h no_op
-map --when-focus-on "var:IS_NVIM=true or var:IS_TMUX=true" ctrl+shift+j no_op
-map --when-focus-on "var:IS_NVIM=true or var:IS_TMUX=true" ctrl+shift+k no_op
-map --when-focus-on "var:IS_NVIM=true or var:IS_TMUX=true" ctrl+shift+l no_op
+map --when-focus-on "var:IS_NVIM=true or var:IS_TMUX=true or var:IS_ZELLIJ" ctrl+h no_op
+map --when-focus-on "var:IS_NVIM=true or var:IS_TMUX=true or var:IS_ZELLIJ" ctrl+j no_op
+map --when-focus-on "var:IS_NVIM=true or var:IS_TMUX=true or var:IS_ZELLIJ" ctrl+k no_op
+map --when-focus-on "var:IS_NVIM=true or var:IS_TMUX=true or var:IS_ZELLIJ" ctrl+l no_op
+map --when-focus-on "var:IS_NVIM=true or var:IS_TMUX=true or var:IS_ZELLIJ" ctrl+shift+h no_op
+map --when-focus-on "var:IS_NVIM=true or var:IS_TMUX=true or var:IS_ZELLIJ" ctrl+shift+j no_op
+map --when-focus-on "var:IS_NVIM=true or var:IS_TMUX=true or var:IS_ZELLIJ" ctrl+shift+k no_op
+map --when-focus-on "var:IS_NVIM=true or var:IS_TMUX=true or var:IS_ZELLIJ" ctrl+shift+l no_op
 ```
 
 </details>

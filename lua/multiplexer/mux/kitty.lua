@@ -103,7 +103,7 @@ multiplexer_mux_kitty.activate_pane = function(direction, opt)
           elseif ori_activate then
             ori_activate()
           end
-        end, { async = false })
+        end)
       end
     end
     if opt.dry_run then
