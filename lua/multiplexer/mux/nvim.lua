@@ -126,6 +126,19 @@ multiplexer_mux_nvim.split_pane = function(direction, opt)
   end
 end
 
+---@param text string
+---@param opt? multiplexer.opt
+multiplexer_mux_nvim.send_text = function(text, opt)
+  if opt then
+    if opt.dry_run then
+      io.stdout:write(table.concat(cmd_extend('send_text(' .. ("\'" .. text .. "\'") .. ')'), ' ') .. '\n')
+      return
+    end
+  end
+
+  vim.api.nvim_feedkeys(text, 'n', true)
+end
+
 ---@param direction direction
 ---@param opt? multiplexer.opt
 ---@return boolean|nil

@@ -32,8 +32,7 @@ This plugin was created based on my personal config. Any contributions or
 suggestions, including typos, code style, features, and so on, are highly
 welcomed.
 
-gif
-<https://github.com/user-attachments/assets/5786b2e8-7a88-4f64-ac2f-c4f05e6f5097>
+https://github.com/user-attachments/assets/c2dfc760-97cb-4763-9973-1bc90536413e
 
 
 ------------------------------------------------------------------------------
@@ -44,8 +43,8 @@ FEATURES                                                *multiplexer-features*
   the same keybindings.
 - **CLI Integration**: Control multiplexer actions from outside Neovim via
   simple command-line scripts.
-- **Basic Functionalities**: Split panes, get current active pane and so on
-  using the plugin's Lua API.
+- **Basic Functionalities**: Split panes, get current active pane, send text
+  and so on using the plugin's Lua API.
 - **Dry Run**: An experimental dry run mode
 
                                                                               
@@ -77,7 +76,6 @@ split management should be configured within each multiplexer individually.
 PLAN                                                        *multiplexer-plan*
 
 
-- send-text
 - i3-wm support?
 - independent of neovim
 
@@ -186,6 +184,7 @@ LUA API                                                  *multiplexer-lua-api*
     ---@field activate_pane fun(direction?: direction, opt?: multiplexer.opt)
     ---@field resize_pane fun(direction: direction, amount: number, opt?: multiplexer.opt)
     ---@field split_pane fun(direction: direction, opt?: multiplexer.opt)
+    ---@field send_text fun(text: string, opt?: multiplexer.opt)
     ---@field is_blocked_on fun(direction: direction, opt?: multiplexer.opt): boolean|nil
     ---@field is_zoomed fun(opt?: multiplexer.opt): boolean|nil
     ---@field is_active fun(opt?: multiplexer.opt): boolean|nil
@@ -446,10 +445,9 @@ fish:
     end
 <
 It is recommended to use zellij-autolock
-<https://github.com/fresh2dev/zellij-autolock> to automatically switches
-between Zellij's "Normal" and "Locked" modes. Also, please note that
-currently, `zellij`’s CLI support isn’t great, and you may experience
-screen flashes.
+<https://github.com/fresh2dev/zellij-autolock> to automatically switch between
+Zellij's "Normal" and "Locked" modes. Also, please note that currently,
+`zellij`’s CLI support isn’t great, and you may experience screen flashes.
 
 
                                                                               

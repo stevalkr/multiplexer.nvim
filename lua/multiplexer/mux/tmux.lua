@@ -125,6 +125,22 @@ multiplexer_mux_tmux.split_pane = function(direction, opt)
   end)
 end
 
+---@param text string
+---@param opt? multiplexer.opt
+multiplexer_mux_tmux.send_text = function(text, opt)
+  local command = cmd_extend({ 'send-keys', text })
+  if apply_opt(command, opt) then
+    return
+  end
+  utils.exec(command, function(p)
+    if p.code ~= 0 then
+      vim.schedule(function()
+        vim.notify('Failed to send text\n' .. p.stderr, vim.log.levels.ERROR)
+      end)
+    end
+  end)
+end
+
 ---@param direction direction
 ---@param opt? multiplexer.opt
 ---@return boolean|nil
