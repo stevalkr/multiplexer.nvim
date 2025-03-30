@@ -3,7 +3,7 @@
 ---@field block_if_zoomed boolean
 ---@field default_resize_amount number
 ---@field kitty_password string|nil
----@field muxes (multiplexer.mux|'nvim'|'tmux'|'zellij'|'kitty'|'wezterm')[]
+---@field muxes (multiplexer.mux|'nvim'|'tmux'|'zellij'|'kitty'|'wezterm'|'i3')[]
 ---@field on_init? fun()
 
 local config = {
@@ -27,7 +27,7 @@ local config = {
 
     -- Enabled multiplexers (overridable by $MULTIPLEXER_LIST environment variable)
     -- Won't load if you're not in a session
-    muxes = { 'nvim', 'tmux', 'zellij', 'kitty', 'wezterm' },
+    muxes = { 'nvim', 'tmux', 'zellij', 'kitty', 'wezterm', 'i3' },
 
     -- Optional function to run after initialization
     on_init = nil

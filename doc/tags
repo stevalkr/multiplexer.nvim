@@ -2,6 +2,7 @@ multiplexer-cli-support	multiplexer.txt	/*multiplexer-cli-support*
 multiplexer-configuration	multiplexer.txt	/*multiplexer-configuration*
 multiplexer-contributing	multiplexer.txt	/*multiplexer-contributing*
 multiplexer-features	multiplexer.txt	/*multiplexer-features*
+multiplexer-i3wm	multiplexer.txt	/*multiplexer-i3wm*
 multiplexer-install	multiplexer.txt	/*multiplexer-install*
 multiplexer-kitty	multiplexer.txt	/*multiplexer-kitty*
 multiplexer-lua-api	multiplexer.txt	/*multiplexer-lua-api*

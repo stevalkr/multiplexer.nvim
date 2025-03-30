@@ -33,4 +33,24 @@ resize_pane() {
     nvim --headless -c ":lua require('multiplexer').resize_pane('$dir')" -c ":qa"
 }
 
-"$1" "$2"
+i3() {
+    local windowid=$(xdotool getactivewindow)
+    local instance=$(xprop -id "$windowid" WM_CLASS | awk -F '"' '{print $2}')
+    case "$instance" in
+        "org.wezfurlong.wezterm" | "kitty")
+        i3-msg mode passthrough_mode && sleep 0.2 && xdotool key --window "$windowid" "$1" Escape
+        ;;
+        *)
+        MULTIPLEXER_LIST="i3" "$2" "$3"
+        ;;
+    esac
+}
+
+main_command="$1"
+if [ -z "$main_command" ]; then
+    echo "Usage: $0 [activate_pane|resize_pane] [left|down|up|right]"
+    exit 1
+fi
+shift
+
+"$main_command" "$@"

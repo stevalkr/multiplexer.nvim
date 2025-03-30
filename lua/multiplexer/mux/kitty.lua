@@ -52,7 +52,7 @@ multiplexer_mux_kitty.current_pane_id = function(opt)
       return
     end
     local data = vim.json.decode(p.stdout)
-    if not data or #data == 0 then
+    if not data or next(data) == nil then
       vim.notify('Failed to get clients info\n' .. p.stderr, vim.log.levels.ERROR)
       return
     end
@@ -120,6 +120,9 @@ end
 ---@param amount number
 ---@param opt? multiplexer.opt
 multiplexer_mux_kitty.resize_pane = function(direction, amount, opt)
+  if amount == 0 then
+    return
+  end
   local n = (amount < 0 and '-' or '+') .. tostring(math.abs(amount))
   local cmd = { 'resize-window', '--increment', n }
   if direction == 'h' or direction == 'l' then
@@ -237,7 +240,7 @@ multiplexer_mux_kitty.is_zoomed = function(opt)
       return
     end
     local data = vim.json.decode(ret.stdout)
-    if not data or #data == 0 then
+    if not data or next(data) == nil then
       vim.notify('Failed to get clients info\n' .. ret.stderr, vim.log.levels.ERROR)
       return
     end
@@ -268,7 +271,7 @@ multiplexer_mux_kitty.is_active = function(opt)
       return
     end
     local data = vim.json.decode(ret.stdout)
-    if not data or #data == 0 then
+    if not data or next(data) == nil then
       vim.notify('Failed to get clients info\n' .. ret.stderr, vim.log.levels.ERROR)
       return
     end

@@ -50,7 +50,7 @@ multiplexer_mux_wezterm.current_pane_id = function(opt)
       return
     end
     local data = vim.json.decode(p.stdout)
-    if not data or #data == 0 then
+    if not data or next(data) == nil then
       vim.notify('Failed to get clients info\n' .. p.stderr, vim.log.levels.ERROR)
       return
     end
@@ -83,6 +83,9 @@ end
 ---@param amount number
 ---@param opt? multiplexer.opt
 multiplexer_mux_wezterm.resize_pane = function(direction, amount, opt)
+  if amount == 0 then
+    return
+  end
   local command = cmd_extend({ 'adjust-pane-size', '--amount', tostring(math.abs(amount)), nav[direction] })
   if apply_opt(command, opt) then
     return
@@ -160,7 +163,7 @@ multiplexer_mux_wezterm.is_zoomed = function(opt)
       return
     end
     local data = vim.json.decode(p.stdout)
-    if not data or #data == 0 then
+    if not data or next(data) == nil then
       vim.notify('Failed to get clients info\n' .. p.stderr, vim.log.levels.ERROR)
       return
     end
@@ -187,7 +190,7 @@ multiplexer_mux_wezterm.is_active = function(opt)
     end
     local requested_pane_id = opt and opt.id or multiplexer_mux_wezterm.meta.pane_id
     local data = vim.json.decode(p.stdout)
-    if not data or #data == 0 then
+    if not data or next(data) == nil then
       vim.notify('Failed to get clients info\n' .. p.stderr, vim.log.levels.ERROR)
       return
     end

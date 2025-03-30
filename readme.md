@@ -1,6 +1,6 @@
 # multiplexer.nvim
 
-A Neovim plugin that enables seamless navigation and resizing across multiple terminal multiplexers, such as tmux, kitty, and wezterm, in addition to Neovim itself.
+A Neovim plugin that enables seamless navigation and resizing across multiple terminal multiplexers, such as tmux, kitty, wezterm and i3wm, in addition to Neovim itself.
 
 This plugin was created based on my personal config. Any contributions or suggestions, including typos, code style, features, and so on, are highly welcomed.
 
@@ -20,6 +20,7 @@ https://github.com/user-attachments/assets/c2dfc760-97cb-4763-9973-1bc90536413e
 - Zellij (partially)
 - WezTerm
 - Kitty
+- i3wm (partially)
 
 ### What It Is
 
@@ -31,7 +32,6 @@ A "smart split" plugin for Neovim. Features like edge wrapping or advanced split
 
 ## Plan
 
-- i3-wm support?
 - independent of neovim
 
 ## Install
@@ -56,7 +56,7 @@ The plugin provides a default configuration that you can customize as needed. He
 ---@field block_if_zoomed boolean
 ---@field default_resize_amount number
 ---@field kitty_password string|nil
----@field muxes (multiplexer.mux|'nvim'|'tmux'|'zellij'|'kitty'|'wezterm')[]
+---@field muxes (multiplexer.mux|'nvim'|'tmux'|'zellij'|'kitty'|'wezterm'|'i3')[]
 ---@field on_init? fun()
 {
   -- Behavior for Neovim floating windows during navigation:
@@ -77,7 +77,7 @@ The plugin provides a default configuration that you can customize as needed. He
 
   -- Enabled multiplexers (overridable by $MULTIPLEXER_LIST environment variable)
   -- Won't load if you're not in a session
-  muxes = { 'nvim', 'tmux', 'zellij', 'kitty', 'wezterm' },
+  muxes = { 'nvim', 'tmux', 'zellij', 'kitty', 'wezterm', 'i3' },
 
   -- Optional function to run after initialization
   on_init = nil
@@ -119,6 +119,7 @@ require('multiplexer.mux').is_nvim  -- Is in Neovim session
 require('multiplexer.mux').is_tmux  -- Is in Tmux session
 require('multiplexer.mux').is_kitty  -- Is in Kitty session
 require('multiplexer.mux').is_wezterm  -- Is in WezTerm session
+require('multiplexer.mux').is_i3  -- Is in i3 session
 
 ---@type multiplexer.mux[]
 require('multiplexer.config').muxes
@@ -190,7 +191,27 @@ resize_pane() {
     nvim --headless -c ":lua require('multiplexer').resize_pane('$dir')" -c ":qa"
 }
 
-"$1" "$2"
+i3() {
+    local windowid=$(xdotool getactivewindow)
+    local instance=$(xprop -id "$windowid" WM_CLASS | awk -F '"' '{print $2}')
+    case "$instance" in
+        "org.wezfurlong.wezterm" | "kitty")
+        i3-msg mode passthrough_mode && sleep 0.2 && xdotool key --window "$windowid" "$1" Escape
+        ;;
+        *)
+        MULTIPLEXER_LIST="i3" "$2" "$3"
+        ;;
+    esac
+}
+
+main_command="$1"
+if [ -z "$main_command" ]; then
+    echo "Usage: $0 [activate_pane|resize_pane] [left|down|up|right]"
+    exit 1
+fi
+shift
+
+"$main_command" "$@"
 ```
 
 Run commands like `multiplexer activate_pane left` or `multiplexer resize_pane right` from your multiplexer configs.
@@ -400,7 +421,7 @@ function zellij
 end
 ```
 
-It is recommended to use [zellij-autolock](https://github.com/fresh2dev/zellij-autolock) to automatically switch between Zellij's "Normal" and "Locked" modes. Also, please note that currently, `zellij`’s CLI support isn’t great, and you may experience screen flashes.
+It is recommended to use [zellij-autolock](https://github.com/fresh2dev/zellij-autolock) or [vim-zellij-navigator](https://github.com/hiasr/vim-zellij-navigator) to automatically switch between Zellij's "Normal" and "Locked" modes. Additionally, please be aware that Zellij’s CLI support is currently limited, and you may encounter screen flashes. Furthermore, not all keybinds are supported by Zellij.
 
 </details>
 
@@ -411,16 +432,19 @@ It is recommended to use [zellij-autolock](https://github.com/fresh2dev/zellij-a
 Integrate with WezTerm by adding this to `~/.config/wezterm/wezterm.lua`:
 
 ```lua
+local wezterm = require('wezterm')
+local config = wezterm.config_builder()
+
 ---@param opts wezterm.key
 ---@param direction "left" | "down" | "up" | "right"
 local activate_pane = function(opts, direction)
   opts.action = wezterm.action_callback(function(win, pane)
     if pane:get_user_vars().IS_NVIM == 'true' or pane:get_user_vars().IS_TMUX == 'true' or pane:get_user_vars().IS_ZELLIJ == 'true' then
+      win:perform_action({ SendKey = { key = opts.key, mods = opts.mods } }, pane)
+    else
       wezterm.background_child_process({ 'bash', '-ilc', -- For macOS users, use zsh instead
         'multiplexer activate_pane ' .. direction
       })
-    else
-      win:perform_action({ SendKey = { key = opts.key, mods = opts.mods } }, pane)
     end
   end)
   return opts
@@ -432,18 +456,18 @@ end
 local adjust_pane = function(opts, direction, amount)
   opts.action = wezterm.action_callback(function(win, pane)
     if pane:get_user_vars().IS_NVIM == 'true' or pane:get_user_vars().IS_TMUX == 'true' or pane:get_user_vars().IS_ZELLIJ == 'true' then
+      win:perform_action({ SendKey = { key = opts.key, mods = opts.mods } }, pane)
+    else
       wezterm.background_child_process({ 'bash', '-ilc', -- For macOS users, use zsh instead
         'multiplexer resize_pane ' .. direction
       })
-    else
-      win:perform_action({ SendKey = { key = opts.key, mods = opts.mods } }, pane)
     end
   end)
   return opts
 end
 
 config.set_environment_variables = {
-  MULTIPLEXER_LIST = 'wezterm'
+  MULTIPLEXER_LIST = 'wezterm,i3'
 }
 config.keys = {
   activate_pane({ key = 'h', mods = 'CTRL' }, 'left'),
@@ -456,7 +480,11 @@ config.keys = {
   adjust_pane({ key = 'k', mods = 'CTRL|SHIFT' }, 'up'),
   adjust_pane({ key = 'l', mods = 'CTRL|SHIFT' }, 'right')
 }
+
+return config
 ```
+
+To note, wezterm still has some issues with keybindings. Some keys may not be passed correctly, depending on your operating system or desktop environment.
 
 </details>
 
@@ -467,9 +495,9 @@ config.keys = {
 Integrate with Kitty by adding this to `~/.config/kitty/kitty.conf`:
 
 ```kitty
-allow_remote_control  on
+allow_remote_control  yes
 listen_on             unix:${TEMP}/mykitty     # or unix:@mykitty on Linux
-env                   MULTIPLEXER_LIST=kitty
+env                   MULTIPLEXER_LIST=kitty,i3
 
 ## For macOS users, use zsh instead
 map ctrl+h          launch --copy-env --keep-focus --type background bash -ilc "multiplexer activate_pane left"
@@ -490,6 +518,30 @@ map --when-focus-on "var:IS_NVIM=true or var:IS_TMUX=true or var:IS_ZELLIJ" ctrl
 map --when-focus-on "var:IS_NVIM=true or var:IS_TMUX=true or var:IS_ZELLIJ" ctrl+shift+k no_op
 map --when-focus-on "var:IS_NVIM=true or var:IS_TMUX=true or var:IS_ZELLIJ" ctrl+shift+l no_op
 ```
+
+</details>
+
+### i3wm
+
+<details>
+
+Integrate with i3wm by adding this to `~/.config/i3/config`:
+
+```i3
+mode "passthrough_mode" {
+  bindsym Escape mode "default"
+}
+bindsym Ctrl+h exec multiplexer i3 Ctrl+h activate_pane left
+bindsym Ctrl+j exec multiplexer i3 Ctrl+j activate_pane down
+bindsym Ctrl+k exec multiplexer i3 Ctrl+k activate_pane up
+bindsym Ctrl+l exec multiplexer i3 Ctrl+l activate_pane right
+bindsym Ctrl+Shift+h exec multiplexer i3 Ctrl+Shift+h resize_pane left
+bindsym Ctrl+Shift+j exec multiplexer i3 Ctrl+Shift+j resize_pane down
+bindsym Ctrl+Shift+k exec multiplexer i3 Ctrl+Shift+k resize_pane up
+bindsym Ctrl+Shift+l exec multiplexer i3 Ctrl+Shift+l resize_pane right
+```
+
+To note, currently the modifier would be lost after you press the key. Consequently, you can't navigate while holding `<Ctrl>`, but you have to press `<Ctrl+h>` each time.
 
 </details>
 
