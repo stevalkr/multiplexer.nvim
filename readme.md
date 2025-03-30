@@ -15,12 +15,23 @@ https://github.com/user-attachments/assets/c2dfc760-97cb-4763-9973-1bc90536413e
 
 ### Supported
 
+Multiplexers:
 - Neovim
 - Tmux
 - Zellij (partially)
 - WezTerm
 - Kitty
 - i3wm (partially)
+
+Actions:
+- current_pane_id
+- activate_pane
+- resize_pane
+- split_pane
+- send_text
+- is_blocked_on
+- is_zoomed
+- is_active
 
 ### What It Is
 
