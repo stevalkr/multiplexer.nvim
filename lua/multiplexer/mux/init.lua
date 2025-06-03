@@ -35,19 +35,37 @@ multiplexer_mux.is_i3 = vim.env.DESKTOP_SESSION == 'i3' or vim.env.I3SOCK ~= nil
 
 ---@param mux multiplexer.mux
 multiplexer_mux.validate = function(mux)
-  vim.validate('mux', mux, 'table')
-  vim.validate('meta', mux.meta, 'table')
-  vim.validate('name', mux.meta.name, 'string')
-  vim.validate('current_pane_id', mux.current_pane_id, 'function')
-  vim.validate('activate_pane', mux.activate_pane, 'function')
-  vim.validate('resize_pane', mux.resize_pane, 'function')
-  vim.validate('split_pane', mux.split_pane, 'function')
-  vim.validate('send_text', mux.send_text, 'function')
-  vim.validate('is_blocked_on', mux.is_blocked_on, 'function')
-  vim.validate('is_zoomed', mux.is_zoomed, 'function')
-  vim.validate('is_active', mux.is_active, 'function')
-  vim.validate('on_init', mux.on_init, 'function', true)
-  vim.validate('on_exit', mux.on_exit, 'function', true)
+  if vim.fn.has('nvim-0.11') == 1 then
+    vim.validate('mux', mux, 'table')
+    vim.validate('meta', mux.meta, 'table')
+    vim.validate('name', mux.meta.name, 'string')
+    vim.validate('current_pane_id', mux.current_pane_id, 'function')
+    vim.validate('activate_pane', mux.activate_pane, 'function')
+    vim.validate('resize_pane', mux.resize_pane, 'function')
+    vim.validate('split_pane', mux.split_pane, 'function')
+    vim.validate('send_text', mux.send_text, 'function')
+    vim.validate('is_blocked_on', mux.is_blocked_on, 'function')
+    vim.validate('is_zoomed', mux.is_zoomed, 'function')
+    vim.validate('is_active', mux.is_active, 'function')
+    vim.validate('on_init', mux.on_init, 'function', true)
+    vim.validate('on_exit', mux.on_exit, 'function', true)
+  else
+    vim.validate({
+      mux = { mux, 'table' },
+      meta = { mux.meta, 'table' },
+      name = { mux.meta.name, 'string' },
+      current_pane_id = { mux.current_pane_id, 'function' },
+      activate_pane = { mux.activate_pane, 'function' },
+      resize_pane = { mux.resize_pane, 'function' },
+      split_pane = { mux.split_pane, 'function' },
+      send_text = { mux.send_text, 'function' },
+      is_blocked_on = { mux.is_blocked_on, 'function' },
+      is_zoomed = { mux.is_zoomed, 'function' },
+      is_active = { mux.is_active, 'function' },
+      on_init = { mux.on_init, 'function', true },
+      on_exit = { mux.on_exit, 'function', true },
+    })
+  end
 end
 
 return multiplexer_mux
