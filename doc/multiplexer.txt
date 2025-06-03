@@ -216,7 +216,7 @@ For more detailed info, please refer to the source code.
                                                                               
 CLI SUPPORT                                          *multiplexer-cli-support*
 
-To integrate with multiplexers outside Neovim
+***IMPORTANT: Necessary to integrate with multiplexers outside Neovim***
 
 Save this script in your `$PATH`, e.g., as `multiplexer`. Also available under
 `scripts/`
@@ -412,6 +412,10 @@ fish:
         __fish_set_user_var IS_TMUX false
     end
 <
+This plugin depends on environment variables. You might need to manually
+update related variables (e.g., WEZTERM_UNIX_SOCKET) when attaching to a tmux
+session in a different terminal emulator instance.
+
 
                                                                               
 ZELLIJ                                                    *multiplexer-zellij*
@@ -484,6 +488,10 @@ It is recommended to use zellij-autolock
 between Zellij's "Normal" and "Locked" modes. Additionally, please be aware
 that Zellij’s CLI support is currently limited, and you may encounter screen
 flashes. Furthermore, not all keybinds are supported by Zellij.
+
+This plugin depends on environment variables. You might need to manually
+update related variables (e.g., WEZTERM_UNIX_SOCKET) when attaching to a
+zellij session in a different terminal emulator instance.
 
 
                                                                               

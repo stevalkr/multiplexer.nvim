@@ -160,7 +160,7 @@ For more detailed info, please refer to the source code.
 
 ### CLI Support
 
-To integrate with multiplexers outside Neovim
+***IMPORTANT: Necessary to integrate with multiplexers outside Neovim***
 
 <details>
 
@@ -364,6 +364,8 @@ function tmux
 end
 ```
 
+This plugin depends on environment variables. You might need to manually update related variables (e.g., WEZTERM_UNIX_SOCKET) when attaching to a tmux session in a different terminal emulator instance.
+
 </details>
 
 ### Zellij
@@ -433,6 +435,8 @@ end
 ```
 
 It is recommended to use [zellij-autolock](https://github.com/fresh2dev/zellij-autolock) or [vim-zellij-navigator](https://github.com/hiasr/vim-zellij-navigator) to automatically switch between Zellij's "Normal" and "Locked" modes. Additionally, please be aware that Zellij’s CLI support is currently limited, and you may encounter screen flashes. Furthermore, not all keybinds are supported by Zellij.
+
+This plugin depends on environment variables. You might need to manually update related variables (e.g., WEZTERM_UNIX_SOCKET) when attaching to a zellij session in a different terminal emulator instance.
 
 </details>
 
