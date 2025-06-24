@@ -247,15 +247,15 @@ eval $(nvim --headless -c ":lua require('multiplexer').activate_pane('$dir', { d
     on_init = function()
       local multiplexer = require('multiplexer')
 
-      vim.keymap.set('n', '<C-h>', multiplexer.activate_pane_left, { desc = 'Activate pane to the left' })
-      vim.keymap.set('n', '<C-j>', multiplexer.activate_pane_down, { desc = 'Activate pane below' })
-      vim.keymap.set('n', '<C-k>', multiplexer.activate_pane_up, { desc = 'Activate pane above' })
-      vim.keymap.set('n', '<C-l>', multiplexer.activate_pane_right, { desc = 'Activate pane to the right' })
+      vim.keymap.set({ 'n', 'i' }, '<C-h>', multiplexer.activate_pane_left, { desc = 'Activate pane to the left' })
+      vim.keymap.set({ 'n', 'i' }, '<C-j>', multiplexer.activate_pane_down, { desc = 'Activate pane below' })
+      vim.keymap.set({ 'n', 'i' }, '<C-k>', multiplexer.activate_pane_up, { desc = 'Activate pane above' })
+      vim.keymap.set({ 'n', 'i' }, '<C-l>', multiplexer.activate_pane_right, { desc = 'Activate pane to the right' })
 
-      vim.keymap.set('n', '<C-S-h>', multiplexer.resize_pane_left, { desc = 'Resize pane to the left' })
-      vim.keymap.set('n', '<C-S-j>', multiplexer.resize_pane_down, { desc = 'Resize pane below' })
-      vim.keymap.set('n', '<C-S-k>', multiplexer.resize_pane_up, { desc = 'Resize pane above' })
-      vim.keymap.set('n', '<C-S-l>', multiplexer.resize_pane_right, { desc = 'Resize pane to the right' })
+      vim.keymap.set({ 'n', 'i' }, '<C-S-h>', multiplexer.resize_pane_left, { desc = 'Resize pane to the left' })
+      vim.keymap.set({ 'n', 'i' }, '<C-S-j>', multiplexer.resize_pane_down, { desc = 'Resize pane below' })
+      vim.keymap.set({ 'n', 'i' }, '<C-S-k>', multiplexer.resize_pane_up, { desc = 'Resize pane above' })
+      vim.keymap.set({ 'n', 'i' }, '<C-S-l>', multiplexer.resize_pane_right, { desc = 'Resize pane to the right' })
     end
   }
 }
@@ -365,6 +365,31 @@ end
 ```
 
 This plugin depends on environment variables. You might need to manually update related variables (e.g., WEZTERM_UNIX_SOCKET) when attaching to a tmux session in a different terminal emulator instance.
+
+fish:
+```fish
+## ~/.config/fish/config.fish
+if set -q TMUX
+    function renew_env --on-event fish_focus_in
+        set -l vars_to_sync MULTIPLEXER MULTIPLEXAER_LIST \
+            I3SOCK \
+            ZELLIJ_PANE_ID ZELLIJ \
+            KITTY_WINDOW_ID KITTY_LISTEN_ON KITTY_PID \
+            WEZTERM_PANE WEZTERM_UNIX_SOCKET WEZTERM_EXECUTABLE
+
+        for var_name in $vars_to_sync
+            set -l tmux_output $(command tmux showenv $var_name 2>/dev/null)
+            if test -n "$tmux_output"
+                set -l parts $(string split -m 1 '=' -- $tmux_output)
+
+                if test (count $parts) -eq 2
+                    set -gx $var_name $parts[2]
+                end
+            end
+        end
+    end
+end
+```
 
 </details>
 
