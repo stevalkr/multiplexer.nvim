@@ -10,7 +10,10 @@ local reverse_nav = { h = 'right', j = 'up', k = 'down', l = 'left' }
 ---@param args table
 ---@return table
 local cmd_extend = function(args)
-  return vim.list_extend(vim.deepcopy(multiplexer_mux_zellij.meta.cmd, true), args)
+  return vim.list_extend(
+    vim.deepcopy(multiplexer_mux_zellij.meta.cmd, true),
+    args
+  )
 end
 
 ---@param command table
@@ -19,7 +22,10 @@ end
 local apply_opt = function(command, opt)
   if opt then
     if opt.id then
-      vim.notify('Zellij does not support setting pane id', vim.log.levels.ERROR)
+      vim.notify(
+        'Zellij does not support setting pane id',
+        vim.log.levels.ERROR
+      )
       return true
     end
     if opt.dry_run then
@@ -34,7 +40,7 @@ end
 multiplexer_mux_zellij.meta = {
   name = 'zellij',
   cmd = { 'zellij', 'action' },
-  pane_id = vim.env.ZELLIJ_PANE_ID
+  pane_id = vim.env.ZELLIJ_PANE_ID,
 }
 
 ---@param opt? multiplexer.opt
@@ -80,7 +86,10 @@ multiplexer_mux_zellij.activate_pane = function(direction, opt)
   utils.exec(command, function(p)
     if p.code ~= 0 then
       vim.schedule(function()
-        vim.notify('Failed to move to pane ' .. (direction or '') .. '\n' .. p.stderr, vim.log.levels.ERROR)
+        vim.notify(
+          'Failed to move to pane ' .. (direction or '') .. '\n' .. p.stderr,
+          vim.log.levels.ERROR
+        )
       end)
     end
   end)
@@ -93,15 +102,26 @@ multiplexer_mux_zellij.resize_pane = function(direction, amount, opt)
   if amount == 0 then
     return
   end
-  local command = cmd_extend({ 'resize', (amount < 0 and '-' or '+'), (amount < 0 and reverse_nav[direction] or nav[direction]) })
+  local command = cmd_extend({
+    'resize',
+    (amount < 0 and '-' or '+'),
+    (amount < 0 and reverse_nav[direction] or nav[direction]),
+  })
   if apply_opt(command, opt) then
     return
   end
   utils.exec(command, function(p)
     if p.code ~= 0 then
       vim.schedule(function()
-        vim.notify('Failed to resize pane ' .. direction .. ' by ' .. amount .. '\n' .. p.stderr,
-          vim.log.levels.ERROR)
+        vim.notify(
+          'Failed to resize pane '
+            .. direction
+            .. ' by '
+            .. amount
+            .. '\n'
+            .. p.stderr,
+          vim.log.levels.ERROR
+        )
       end)
     end
   end)
@@ -122,14 +142,17 @@ multiplexer_mux_zellij.split_pane = function(direction, opt)
       utils.exec(command, function(p)
         if p.code ~= 0 then
           vim.schedule(function()
-            vim.notify('Failed to swap pane ' .. direction .. '\n' .. p.stderr,
-              vim.log.levels.ERROR)
+            vim.notify(
+              'Failed to swap pane ' .. direction .. '\n' .. p.stderr,
+              vim.log.levels.ERROR
+            )
           end)
         end
       end)
     end
   end
-  local command = cmd_extend({ 'new-pane', '--direction', split_nav[direction] })
+  local command =
+    cmd_extend({ 'new-pane', '--direction', split_nav[direction] })
   table.insert(dry_run_commands, 1, table.concat(command, ' '))
   if opt and opt.dry_run then
     io.stdout:write(table.concat(dry_run_commands, ' && ') .. '\n')
@@ -138,8 +161,10 @@ multiplexer_mux_zellij.split_pane = function(direction, opt)
   utils.exec(command, function(p)
     if p.code ~= 0 then
       vim.schedule(function()
-        vim.notify('Failed to split pane ' .. direction .. '\n' .. p.stderr,
-          vim.log.levels.ERROR)
+        vim.notify(
+          'Failed to split pane ' .. direction .. '\n' .. p.stderr,
+          vim.log.levels.ERROR
+        )
       end)
     elseif swap then
       swap()
@@ -161,7 +186,10 @@ multiplexer_mux_zellij.send_text = function(text, opt)
   utils.exec(command, function(p)
     if p.code ~= 0 then
       vim.schedule(function()
-        vim.notify('Failed to send text to pane\n' .. p.stderr, vim.log.levels.ERROR)
+        vim.notify(
+          'Failed to send text to pane\n' .. p.stderr,
+          vim.log.levels.ERROR
+        )
       end)
     end
   end)
@@ -176,15 +204,23 @@ multiplexer_mux_zellij.is_blocked_on = function(direction, opt)
     return
   end
   local command = cmd_extend({ 'move-focus', nav[direction] })
-  if utils.exec(command, function(p)
-        if p.code ~= 0 then
-          vim.notify('Failed to move to pane ' .. direction .. '\n' .. p.stderr, vim.log.levels.ERROR)
-          return true
-        end
-      end, { async = false }) then
+  if
+    utils.exec(command, function(p)
+      if p.code ~= 0 then
+        vim.notify(
+          'Failed to move to pane ' .. direction .. '\n' .. p.stderr,
+          vim.log.levels.ERROR
+        )
+        return true
+      end
+    end, { async = false })
+  then
     return
   end
-  if multiplexer_mux_zellij.meta.pane_id == multiplexer_mux_zellij.current_pane_id() then
+  if
+    multiplexer_mux_zellij.meta.pane_id
+    == multiplexer_mux_zellij.current_pane_id()
+  then
     if opt and opt.dry_run then
       io.stdout:write('echo true\n')
       return
@@ -192,12 +228,17 @@ multiplexer_mux_zellij.is_blocked_on = function(direction, opt)
     return true
   end
   command = cmd_extend({ 'move-focus', reverse_nav[direction] })
-  if utils.exec(command, function(p)
-        if p.code ~= 0 then
-          vim.notify('Failed to move to pane ' .. direction .. '\n' .. p.stderr, vim.log.levels.ERROR)
-          return true
-        end
-      end, { async = false }) then
+  if
+    utils.exec(command, function(p)
+      if p.code ~= 0 then
+        vim.notify(
+          'Failed to move to pane ' .. direction .. '\n' .. p.stderr,
+          vim.log.levels.ERROR
+        )
+        return true
+      end
+    end, { async = false })
+  then
     return
   end
   if opt and opt.dry_run then
@@ -212,7 +253,10 @@ end
 multiplexer_mux_zellij.is_zoomed = function(opt)
   if opt then
     if opt.id then
-      vim.notify('Zellij does not support setting pane id', vim.log.levels.ERROR)
+      vim.notify(
+        'Zellij does not support setting pane id',
+        vim.log.levels.ERROR
+      )
       return
     end
     if opt.dry_run then
@@ -228,7 +272,10 @@ end
 multiplexer_mux_zellij.is_active = function(opt)
   if opt then
     if opt.id then
-      vim.notify('Zellij does not support setting pane id', vim.log.levels.ERROR)
+      vim.notify(
+        'Zellij does not support setting pane id',
+        vim.log.levels.ERROR
+      )
       return
     end
     if opt.dry_run then

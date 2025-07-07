@@ -30,7 +30,8 @@ multiplexer_mux.is_nvim = #vim.api.nvim_list_uis() ~= 0 or vim.env.NVIM ~= nil
 multiplexer_mux.is_tmux = term_program == 'tmux' or vim.env.TMUX ~= nil
 multiplexer_mux.is_zellij = term_program == 'zellij' or vim.env.ZELLIJ ~= nil
 multiplexer_mux.is_kitty = term_program == 'kitty' or vim.env.KITTY_PID ~= nil
-multiplexer_mux.is_wezterm = term_program == 'wezterm' or vim.env.WEZTERM_EXECUTABLE ~= nil
+multiplexer_mux.is_wezterm = term_program == 'wezterm'
+  or vim.env.WEZTERM_EXECUTABLE ~= nil
 multiplexer_mux.is_i3 = vim.env.DESKTOP_SESSION == 'i3' or vim.env.I3SOCK ~= nil
 
 ---@param mux multiplexer.mux

@@ -40,13 +40,17 @@ find_focused = function(node, fn)
   if node and node.nodes then
     for _, child in ipairs(node.nodes) do
       found = find_focused(child, fn)
-      if found then return found end
+      if found then
+        return found
+      end
     end
   end
   if node and node.floating_nodes then
     for _, child in ipairs(node.floating_nodes) do
       found = find_focused(child, fn)
-      if found then return found end
+      if found then
+        return found
+      end
     end
   end
   return nil
@@ -56,7 +60,7 @@ end
 multiplexer_mux_i3.meta = {
   name = 'i3',
   cmd = { 'i3-msg', '-s', vim.env.I3SOCK },
-  pane_id = ''
+  pane_id = '',
 }
 
 ---@param opt? multiplexer.opt
@@ -77,7 +81,9 @@ multiplexer_mux_i3.current_pane_id = function(opt)
       vim.notify('Failed to get tree info\n' .. p.stderr, vim.log.levels.ERROR)
       return
     end
-    local node = find_focused(data, function(n) return n.focused end)
+    local node = find_focused(data, function(n)
+      return n.focused
+    end)
     if not node then
       return
     end
@@ -105,7 +111,10 @@ multiplexer_mux_i3.activate_pane = function(direction, opt)
   utils.exec(command, function(p)
     if p.code ~= 0 then
       vim.schedule(function()
-        vim.notify('Failed to move to pane ' .. (direction or '') .. '\n' .. p.stderr, vim.log.levels.ERROR)
+        vim.notify(
+          'Failed to move to pane ' .. (direction or '') .. '\n' .. p.stderr,
+          vim.log.levels.ERROR
+        )
       end)
     end
   end)
@@ -118,16 +127,27 @@ multiplexer_mux_i3.resize_pane = function(direction, amount, opt)
   if amount == 0 then
     return
   end
-  local command = cmd_extend({ 'resize', (amount < 0 and 'shrink' or 'grow'), (amount < 0 and reverse_nav[direction] or nav[direction]),
-    tostring(math.abs(amount)) })
+  local command = cmd_extend({
+    'resize',
+    (amount < 0 and 'shrink' or 'grow'),
+    (amount < 0 and reverse_nav[direction] or nav[direction]),
+    tostring(math.abs(amount)),
+  })
   if apply_opt(command, opt) then
     return
   end
   utils.exec(command, function(p)
     if p.code ~= 0 then
       vim.schedule(function()
-        vim.notify('Failed to resize pane ' .. direction .. ' by ' .. amount .. '\n' .. p.stderr,
-          vim.log.levels.ERROR)
+        vim.notify(
+          'Failed to resize pane '
+            .. direction
+            .. ' by '
+            .. amount
+            .. '\n'
+            .. p.stderr,
+          vim.log.levels.ERROR
+        )
       end)
     end
   end)
@@ -149,7 +169,10 @@ multiplexer_mux_i3.send_text = function(text, opt)
   utils.exec(command, function(p)
     if p.code ~= 0 then
       vim.schedule(function()
-        vim.notify('Failed to send text to pane\n' .. p.stderr, vim.log.levels.ERROR)
+        vim.notify(
+          'Failed to send text to pane\n' .. p.stderr,
+          vim.log.levels.ERROR
+        )
       end)
     end
   end)
@@ -160,15 +183,22 @@ end
 ---@return boolean|nil
 multiplexer_mux_i3.is_blocked_on = function(direction, opt)
   local command = cmd_extend({ 'focus', nav[direction] })
-  if utils.exec(command, function(p)
-        if p.code ~= 0 then
-          vim.notify('Failed to move to pane ' .. (direction or '') .. '\n' .. p.stderr, vim.log.levels.ERROR)
-          return true
-        end
-      end, { async = false }) then
+  if
+    utils.exec(command, function(p)
+      if p.code ~= 0 then
+        vim.notify(
+          'Failed to move to pane ' .. (direction or '') .. '\n' .. p.stderr,
+          vim.log.levels.ERROR
+        )
+        return true
+      end
+    end, { async = false })
+  then
     return
   end
-  if multiplexer_mux_i3.meta.pane_id == multiplexer_mux_i3.current_pane_id() then
+  if
+    multiplexer_mux_i3.meta.pane_id == multiplexer_mux_i3.current_pane_id()
+  then
     if opt and opt.dry_run then
       io.stdout:write('echo true\n')
       return
@@ -176,12 +206,17 @@ multiplexer_mux_i3.is_blocked_on = function(direction, opt)
     return true
   end
   command = cmd_extend({ 'focus', reverse_nav[direction] })
-  if utils.exec(command, function(p)
-        if p.code ~= 0 then
-          vim.notify('Failed to move to pane ' .. direction .. '\n' .. p.stderr, vim.log.levels.ERROR)
-          return true
-        end
-      end, { async = false }) then
+  if
+    utils.exec(command, function(p)
+      if p.code ~= 0 then
+        vim.notify(
+          'Failed to move to pane ' .. direction .. '\n' .. p.stderr,
+          vim.log.levels.ERROR
+        )
+        return true
+      end
+    end, { async = false })
+  then
     return
   end
   if opt and opt.dry_run then
@@ -230,7 +265,8 @@ multiplexer_mux_i3.is_active = function(opt)
       vim.notify('Failed to get tree info\n' .. p.stderr, vim.log.levels.ERROR)
     end
     local node = find_focused(data, function(n)
-      return tostring(n.id) == (opt and opt.id or multiplexer_mux_i3.meta.pane_id)
+      return tostring(n.id)
+        == (opt and opt.id or multiplexer_mux_i3.meta.pane_id)
     end)
     if not node then
       return

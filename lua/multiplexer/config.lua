@@ -30,19 +30,18 @@ local config = {
     muxes = { 'nvim', 'tmux', 'zellij', 'kitty', 'wezterm', 'i3' },
 
     -- Optional function to run after initialization
-    on_init = nil
-  }
+    on_init = nil,
+  },
 }
 
 ---@type multiplexer.config
-local multiplexer_config = setmetatable({
-}, {
+local multiplexer_config = setmetatable({}, {
   __index = function(_, key)
     return config[key]
   end,
   __newindex = function(_, key, value)
     config[key] = value
-  end
+  end,
 })
 
 ---@param opts? multiplexer.config
@@ -55,7 +54,8 @@ multiplexer_config.setup = function(opts) ---@diagnostic disable-line
     if multiplexer_mux.is_nvim then
       vim.fn.setenv('MULTIPLEXER_LIST', 'nvim,' .. vim.env.MULTIPLEXER_LIST)
     end
-    config.muxes = vim.split(vim.env.MULTIPLEXER_LIST, ',', { trimempty = true })
+    config.muxes =
+      vim.split(vim.env.MULTIPLEXER_LIST, ',', { trimempty = true })
   end
 
   local muxes = {}
@@ -83,7 +83,7 @@ multiplexer_config.setup = function(opts) ---@diagnostic disable-line
             mux.on_init()
           end
         end
-      end)
+      end),
     })
     vim.api.nvim_create_autocmd({ 'VimLeavePre', 'VimSuspend' }, {
       callback = vim.schedule_wrap(function()
@@ -92,7 +92,7 @@ multiplexer_config.setup = function(opts) ---@diagnostic disable-line
             mux.on_exit()
           end
         end
-      end)
+      end),
     })
   end
 end

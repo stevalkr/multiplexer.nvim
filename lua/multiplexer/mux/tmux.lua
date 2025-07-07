@@ -9,7 +9,10 @@ local pane_nav = { h = 'left', j = 'bottom', k = 'top', l = 'right' }
 ---@param args table
 ---@return table
 local cmd_extend = function(args)
-  return vim.list_extend(vim.deepcopy(multiplexer_mux_tmux.meta.cmd, true), args)
+  return vim.list_extend(
+    vim.deepcopy(multiplexer_mux_tmux.meta.cmd, true),
+    args
+  )
 end
 
 ---@param command table
@@ -33,13 +36,13 @@ end
 multiplexer_mux_tmux.meta = {
   name = 'tmux',
   cmd = { 'tmux', '-S', string.match(vim.env.TMUX, '^(.-),') },
-  pane_id = vim.env.TMUX_PANE
+  pane_id = vim.env.TMUX_PANE,
 }
 
 ---@param opt? multiplexer.opt
 ---@return string|nil
 multiplexer_mux_tmux.current_pane_id = function(opt)
-  local command = cmd_extend({ 'display', '-p', '\'#{pane_id}\'' })
+  local command = cmd_extend({ 'display', '-p', "'#{pane_id}'" })
   if opt and opt.dry_run then
     io.stdout:write(table.concat(command, ' ') .. '\n')
     return
@@ -72,7 +75,10 @@ multiplexer_mux_tmux.activate_pane = function(direction, opt)
   utils.exec(command, function(p)
     if p.code ~= 0 then
       vim.schedule(function()
-        vim.notify('Failed to move to pane ' .. (direction or '') .. '\n' .. p.stderr, vim.log.levels.ERROR)
+        vim.notify(
+          'Failed to move to pane ' .. (direction or '') .. '\n' .. p.stderr,
+          vim.log.levels.ERROR
+        )
       end)
     end
   end)
@@ -85,15 +91,26 @@ multiplexer_mux_tmux.resize_pane = function(direction, amount, opt)
   if amount == 0 then
     return
   end
-  local command = cmd_extend({ 'resize-pane', '-' .. nav[direction], tostring(math.abs(amount)) })
+  local command = cmd_extend({
+    'resize-pane',
+    '-' .. nav[direction],
+    tostring(math.abs(amount)),
+  })
   if apply_opt(command, opt) then
     return
   end
   utils.exec(command, function(p)
     if p.code ~= 0 then
       vim.schedule(function()
-        vim.notify('Failed to resize pane ' .. direction .. ' by ' .. amount .. '\n' .. p.stderr,
-          vim.log.levels.ERROR)
+        vim.notify(
+          'Failed to resize pane '
+            .. direction
+            .. ' by '
+            .. amount
+            .. '\n'
+            .. p.stderr,
+          vim.log.levels.ERROR
+        )
       end)
     end
   end)
@@ -118,8 +135,10 @@ multiplexer_mux_tmux.split_pane = function(direction, opt)
   utils.exec(command, function(p)
     if p.code ~= 0 then
       vim.schedule(function()
-        vim.notify('Failed to split pane ' .. direction .. '\n' .. p.stderr,
-          vim.log.levels.ERROR)
+        vim.notify(
+          'Failed to split pane ' .. direction .. '\n' .. p.stderr,
+          vim.log.levels.ERROR
+        )
       end)
     end
   end)
@@ -145,7 +164,12 @@ end
 ---@param opt? multiplexer.opt
 ---@return boolean|nil
 multiplexer_mux_tmux.is_blocked_on = function(direction, opt)
-  local command = cmd_extend({ 'if-shell', '-F', string.format('#{pane_at_%s}', pane_nav[direction]), 'display -p true' })
+  local command = cmd_extend({
+    'if-shell',
+    '-F',
+    string.format('#{pane_at_%s}', pane_nav[direction]),
+    'display -p true',
+  })
   if apply_opt(command, opt) then
     return
   end
@@ -161,7 +185,8 @@ end
 ---@param opt? multiplexer.opt
 ---@return boolean|nil
 multiplexer_mux_tmux.is_zoomed = function(opt)
-  local command = cmd_extend({ 'if-shell', '-F', '#{window_zoomed_flag}', 'display -p true' })
+  local command =
+    cmd_extend({ 'if-shell', '-F', '#{window_zoomed_flag}', 'display -p true' })
   if apply_opt(command, opt) then
     return
   end
@@ -177,7 +202,8 @@ end
 ---@param opt? multiplexer.opt
 ---@return boolean|nil
 multiplexer_mux_tmux.is_active = function(opt)
-  local command = cmd_extend({ 'if-shell', '-F', '#{pane_active}', 'display -p true' })
+  local command =
+    cmd_extend({ 'if-shell', '-F', '#{pane_active}', 'display -p true' })
   if opt and not opt.id then
     opt.id = multiplexer_mux_tmux.meta.pane_id
   end
@@ -194,12 +220,26 @@ multiplexer_mux_tmux.is_active = function(opt)
 end
 
 local set_pane_option = function(option, value)
-  local command = cmd_extend({ 'set-option', '-t', multiplexer_mux_tmux.meta.pane_id, '-p', option, value })
+  local command = cmd_extend({
+    'set-option',
+    '-t',
+    multiplexer_mux_tmux.meta.pane_id,
+    '-p',
+    option,
+    value,
+  })
   utils.exec(command, function(p)
     if p.code ~= 0 then
       vim.schedule(function()
-        vim.notify('Failed to set option ' .. option .. ' to ' .. value .. '\n' .. p.stderr,
-          vim.log.levels.ERROR)
+        vim.notify(
+          'Failed to set option '
+            .. option
+            .. ' to '
+            .. value
+            .. '\n'
+            .. p.stderr,
+          vim.log.levels.ERROR
+        )
       end)
     end
   end)
