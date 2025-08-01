@@ -47,7 +47,7 @@ multiplexer.resize_pane = function(direction, amount, opt)
 end
 
 ---@param opts? multiplexer.config
-function multiplexer.setup(opts)
+multiplexer.setup = function(opts)
   config.setup(opts)
 
   for dir, key in pairs({ left = 'h', down = 'j', up = 'k', right = 'l' }) do

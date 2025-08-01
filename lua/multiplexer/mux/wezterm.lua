@@ -42,29 +42,23 @@ multiplexer_mux_wezterm.meta = {
 ---@param opt? multiplexer.opt
 ---@return string|nil
 multiplexer_mux_wezterm.current_pane_id = function(opt)
-  if opt and opt.dry_run then
-    io.stdout:write('echo Dry run not implemented yet\n')
-    return
-  end
   local command = cmd_extend({ 'list-clients', '--format', 'json' })
-  return utils.exec(command, function(p)
+  local pane_id = utils.exec(command, function(p)
     if p.code ~= 0 then
-      vim.notify(
-        'Failed to get clients info\n' .. p.stderr,
-        vim.log.levels.ERROR
-      )
+      utils.log('Failed to get clients info\n' .. p.stderr, 'ERROR')
       return
     end
     local data = vim.json.decode(p.stdout)
     if not data or next(data) == nil then
-      vim.notify(
-        'Failed to get clients info\n' .. p.stderr,
-        vim.log.levels.ERROR
-      )
+      utils.log('Failed to get clients info\n' .. p.stderr, 'ERROR')
       return
     end
     return tostring(data[1].focused_pane_id)
   end, { async = false })
+  if opt and opt.dry_run then
+    io.stdout:write('echo ' .. pane_id)
+  end
+  return pane_id
 end
 
 ---@param direction? direction
@@ -81,12 +75,10 @@ multiplexer_mux_wezterm.activate_pane = function(direction, opt)
   end
   utils.exec(command, function(p)
     if p.code ~= 0 then
-      vim.schedule(function()
-        vim.notify(
-          'Failed to move to pane ' .. (direction or '') .. '\n' .. p.stderr,
-          vim.log.levels.ERROR
-        )
-      end)
+      utils.log(
+        'Failed to move to pane ' .. (direction or '') .. '\n' .. p.stderr,
+        'ERROR'
+      )
     end
   end)
 end
@@ -109,17 +101,15 @@ multiplexer_mux_wezterm.resize_pane = function(direction, amount, opt)
   end
   utils.exec(command, function(p)
     if p.code ~= 0 then
-      vim.schedule(function()
-        vim.notify(
-          'Failed to resize pane '
-            .. direction
-            .. ' by '
-            .. amount
-            .. '\n'
-            .. p.stderr,
-          vim.log.levels.ERROR
-        )
-      end)
+      utils.log(
+        'Failed to resize pane '
+          .. direction
+          .. ' by '
+          .. amount
+          .. '\n'
+          .. p.stderr,
+        'ERROR'
+      )
     end
   end)
 end
@@ -133,12 +123,10 @@ multiplexer_mux_wezterm.split_pane = function(direction, opt)
   end
   utils.exec(command, function(p)
     if p.code ~= 0 then
-      vim.schedule(function()
-        vim.notify(
-          'Failed to split pane ' .. direction .. '\n' .. p.stderr,
-          vim.log.levels.ERROR
-        )
-      end)
+      utils.log(
+        'Failed to split pane ' .. direction .. '\n' .. p.stderr,
+        'ERROR'
+      )
     end
   end)
 end
@@ -152,12 +140,7 @@ multiplexer_mux_wezterm.send_text = function(text, opt)
   end
   utils.exec(command, function(p)
     if p.code ~= 0 then
-      vim.schedule(function()
-        vim.notify(
-          'Failed to send text to pane\n' .. p.stderr,
-          vim.log.levels.ERROR
-        )
-      end)
+      utils.log('Failed to send text to pane\n' .. p.stderr, 'ERROR')
     end
   end)
 end
@@ -172,10 +155,7 @@ multiplexer_mux_wezterm.is_blocked_on = function(direction, opt)
   end
   return utils.exec(command, function(p)
     if p.code ~= 0 then
-      vim.notify(
-        'Failed to get relative pane id\n' .. p.stderr,
-        vim.log.levels.ERROR
-      )
+      utils.log('Failed to get relative pane id\n' .. p.stderr, 'ERROR')
     else
       return #p.stdout == 0
     end
@@ -191,15 +171,12 @@ multiplexer_mux_wezterm.is_zoomed = function(opt)
   end
   return utils.exec(command, function(p)
     if p.code ~= 0 then
-      vim.notify('Failed to get pane info\n' .. p.stderr, vim.log.levels.ERROR)
+      utils.log('Failed to get pane info\n' .. p.stderr, 'ERROR')
       return
     end
     local data = vim.json.decode(p.stdout)
     if not data or next(data) == nil then
-      vim.notify(
-        'Failed to get clients info\n' .. p.stderr,
-        vim.log.levels.ERROR
-      )
+      utils.log('Failed to get clients info\n' .. p.stderr, 'ERROR')
       return
     end
     for _, pane in pairs(data) do
@@ -223,17 +200,14 @@ multiplexer_mux_wezterm.is_active = function(opt)
   local command = cmd_extend({ 'list', '--format', 'json' })
   return utils.exec(command, function(p)
     if p.code ~= 0 then
-      vim.notify('Failed to get pane info\n' .. p.stderr, vim.log.levels.ERROR)
+      utils.log('Failed to get pane info\n' .. p.stderr, 'ERROR')
       return
     end
     local requested_pane_id = opt and opt.id
       or multiplexer_mux_wezterm.meta.pane_id
     local data = vim.json.decode(p.stdout)
     if not data or next(data) == nil then
-      vim.notify(
-        'Failed to get clients info\n' .. p.stderr,
-        vim.log.levels.ERROR
-      )
+      utils.log('Failed to get clients info\n' .. p.stderr, 'ERROR')
       return
     end
     for _, pane in pairs(data) do

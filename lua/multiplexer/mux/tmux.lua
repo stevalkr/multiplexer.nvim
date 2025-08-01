@@ -49,7 +49,7 @@ multiplexer_mux_tmux.current_pane_id = function(opt)
   end
   return utils.exec(command, function(p)
     if p.code ~= 0 then
-      vim.notify('Failed to get pane id\n' .. p.stderr, vim.log.levels.ERROR)
+      utils.log('Failed to get pane id\n' .. p.stderr, 'ERROR')
       return
     end
     p.stdout = vim.trim(p.stdout)
@@ -74,12 +74,10 @@ multiplexer_mux_tmux.activate_pane = function(direction, opt)
   end
   utils.exec(command, function(p)
     if p.code ~= 0 then
-      vim.schedule(function()
-        vim.notify(
-          'Failed to move to pane ' .. (direction or '') .. '\n' .. p.stderr,
-          vim.log.levels.ERROR
-        )
-      end)
+      utils.log(
+        'Failed to move to pane ' .. (direction or '') .. '\n' .. p.stderr,
+        'ERROR'
+      )
     end
   end)
 end
@@ -101,17 +99,15 @@ multiplexer_mux_tmux.resize_pane = function(direction, amount, opt)
   end
   utils.exec(command, function(p)
     if p.code ~= 0 then
-      vim.schedule(function()
-        vim.notify(
-          'Failed to resize pane '
-            .. direction
-            .. ' by '
-            .. amount
-            .. '\n'
-            .. p.stderr,
-          vim.log.levels.ERROR
-        )
-      end)
+      utils.log(
+        'Failed to resize pane '
+          .. direction
+          .. ' by '
+          .. amount
+          .. '\n'
+          .. p.stderr,
+        'ERROR'
+      )
     end
   end)
 end
@@ -134,12 +130,10 @@ multiplexer_mux_tmux.split_pane = function(direction, opt)
   end
   utils.exec(command, function(p)
     if p.code ~= 0 then
-      vim.schedule(function()
-        vim.notify(
-          'Failed to split pane ' .. direction .. '\n' .. p.stderr,
-          vim.log.levels.ERROR
-        )
-      end)
+      utils.log(
+        'Failed to split pane ' .. direction .. '\n' .. p.stderr,
+        'ERROR'
+      )
     end
   end)
 end
@@ -153,9 +147,7 @@ multiplexer_mux_tmux.send_text = function(text, opt)
   end
   utils.exec(command, function(p)
     if p.code ~= 0 then
-      vim.schedule(function()
-        vim.notify('Failed to send text\n' .. p.stderr, vim.log.levels.ERROR)
-      end)
+      utils.log('Failed to send text\n' .. p.stderr, 'ERROR')
     end
   end)
 end
@@ -175,7 +167,7 @@ multiplexer_mux_tmux.is_blocked_on = function(direction, opt)
   end
   return utils.exec(command, function(p)
     if p.code ~= 0 then
-      vim.notify('Failed to list panes\n' .. p.stderr, vim.log.levels.ERROR)
+      utils.log('Failed to list panes\n' .. p.stderr, 'ERROR')
       return
     end
     return #p.stdout ~= 0
@@ -192,7 +184,7 @@ multiplexer_mux_tmux.is_zoomed = function(opt)
   end
   return utils.exec(command, function(p)
     if p.code ~= 0 then
-      vim.notify('Failed to check zoomed\n' .. p.stderr, vim.log.levels.ERROR)
+      utils.log('Failed to check zoomed\n' .. p.stderr, 'ERROR')
       return
     end
     return #p.stdout ~= 0
@@ -212,7 +204,7 @@ multiplexer_mux_tmux.is_active = function(opt)
   end
   return utils.exec(command, function(p)
     if p.code ~= 0 then
-      vim.notify('Failed to check active\n' .. p.stderr, vim.log.levels.ERROR)
+      utils.log('Failed to check active\n' .. p.stderr, 'ERROR')
       return
     end
     return #p.stdout ~= 0
@@ -230,17 +222,10 @@ local set_pane_option = function(option, value)
   })
   utils.exec(command, function(p)
     if p.code ~= 0 then
-      vim.schedule(function()
-        vim.notify(
-          'Failed to set option '
-            .. option
-            .. ' to '
-            .. value
-            .. '\n'
-            .. p.stderr,
-          vim.log.levels.ERROR
-        )
-      end)
+      utils.log(
+        'Failed to set option ' .. option .. ' to ' .. value .. '\n' .. p.stderr,
+        'ERROR'
+      )
     end
   end)
 end

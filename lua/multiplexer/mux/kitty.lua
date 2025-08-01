@@ -56,27 +56,18 @@ multiplexer_mux_kitty.current_pane_id = function(opt)
     cmd_extend({ 'ls', '--match', 'state:active and state:parent_active' })
   return utils.exec(command, function(p)
     if p.code ~= 0 then
-      vim.notify(
-        'Failed to get clients info\n' .. p.stderr,
-        vim.log.levels.ERROR
-      )
+      utils.log('Failed to get clients info\n' .. p.stderr, 'ERROR')
       return
     end
     local data = vim.json.decode(p.stdout)
     if not data or next(data) == nil then
-      vim.notify(
-        'Failed to get clients info\n' .. p.stderr,
-        vim.log.levels.ERROR
-      )
+      utils.log('Failed to get clients info\n' .. p.stderr, 'ERROR')
       return
     end
     for _, client in pairs(data) do
       if client.is_active then
         if #client.tabs ~= 1 or #client.tabs[1].windows ~= 1 then
-          vim.notify(
-            'Unexpected number of tabs or windows\n',
-            vim.log.levels.ERROR
-          )
+          utils.log('Unexpected number of tabs or windows\n', 'ERROR')
           return
         end
         return tostring(client.tabs[1].windows[1].id)
@@ -96,12 +87,10 @@ multiplexer_mux_kitty.activate_pane = function(direction, opt)
     activate = function()
       utils.exec(command, function(p)
         if p.code ~= 0 then
-          vim.schedule(function()
-            vim.notify(
-              'Failed to move to pane ' .. direction .. '\n' .. p.stderr,
-              vim.log.levels.ERROR
-            )
-          end)
+          utils.log(
+            'Failed to move to pane ' .. direction .. '\n' .. p.stderr,
+            'ERROR'
+          )
         end
       end)
     end
@@ -114,12 +103,10 @@ multiplexer_mux_kitty.activate_pane = function(direction, opt)
       activate = function()
         utils.exec(command, function(p)
           if p.code ~= 0 then
-            vim.schedule(function()
-              vim.notify(
-                'Failed to move to pane ' .. opt.id .. '\n' .. p.stderr,
-                vim.log.levels.ERROR
-              )
-            end)
+            utils.log(
+              'Failed to move to pane ' .. opt.id .. '\n' .. p.stderr,
+              'ERROR'
+            )
           elseif ori_activate then
             ori_activate()
           end
@@ -156,17 +143,15 @@ multiplexer_mux_kitty.resize_pane = function(direction, amount, opt)
   end
   utils.exec(command, function(p)
     if p.code ~= 0 then
-      vim.schedule(function()
-        vim.notify(
-          'Failed to resize pane '
-            .. direction
-            .. ' by '
-            .. amount
-            .. '\n'
-            .. p.stderr,
-          vim.log.levels.ERROR
-        )
-      end)
+      utils.log(
+        'Failed to resize pane '
+          .. direction
+          .. ' by '
+          .. amount
+          .. '\n'
+          .. p.stderr,
+        'ERROR'
+      )
     end
   end)
 end
@@ -186,12 +171,10 @@ multiplexer_mux_kitty.split_pane = function(direction, opt)
   end
   utils.exec(command, function(p)
     if p.code ~= 0 then
-      vim.schedule(function()
-        vim.notify(
-          'Failed to split pane ' .. direction .. '\n' .. p.stderr,
-          vim.log.levels.ERROR
-        )
-      end)
+      utils.log(
+        'Failed to split pane ' .. direction .. '\n' .. p.stderr,
+        'ERROR'
+      )
     end
   end)
 end
@@ -205,9 +188,7 @@ multiplexer_mux_kitty.send_text = function(text, opt)
   end
   utils.exec(command, function(p)
     if p.code ~= 0 then
-      vim.schedule(function()
-        vim.notify('Failed to send text\n' .. p.stderr, vim.log.levels.ERROR)
-      end)
+      utils.log('Failed to send text\n' .. p.stderr, 'ERROR')
     end
   end)
 end
@@ -228,9 +209,9 @@ multiplexer_mux_kitty.is_blocked_on = function(direction, opt)
         cmd_extend({ 'focus-window', '--match', 'id:' .. opt.id }),
         function(ret)
           if ret.code ~= 0 then
-            vim.notify(
+            utils.log(
               'Failed to move to pane ' .. opt.id .. '\n' .. ret.stderr,
-              vim.log.levels.ERROR
+              'ERROR'
             )
           end
         end,
@@ -245,9 +226,9 @@ multiplexer_mux_kitty.is_blocked_on = function(direction, opt)
         cmd_extend({ 'focus-window', '--match', 'id:' .. curr_win }),
         function(p)
           if p.code ~= 0 then
-            vim.notify(
+            utils.log(
               'Failed to move to pane ' .. curr_win .. '\n' .. p.stderr,
-              vim.log.levels.ERROR
+              'ERROR'
             )
           end
         end,
@@ -258,10 +239,7 @@ multiplexer_mux_kitty.is_blocked_on = function(direction, opt)
       if ret.stderr:find('No matching windows') then
         return true
       end
-      vim.notify(
-        'Failed to get relative pane id\n' .. ret.stderr,
-        vim.log.levels.ERROR
-      )
+      utils.log('Failed to get relative pane id\n' .. ret.stderr, 'ERROR')
       return
     end
     return false
@@ -282,27 +260,18 @@ multiplexer_mux_kitty.is_zoomed = function(opt)
   local command = cmd_extend({ 'ls', '--match', match })
   return utils.exec(command, function(ret)
     if ret.code ~= 0 then
-      vim.notify(
-        'Failed to get pane info\n' .. ret.stderr,
-        vim.log.levels.ERROR
-      )
+      utils.log('Failed to get pane info\n' .. ret.stderr, 'ERROR')
       return
     end
     local data = vim.json.decode(ret.stdout)
     if not data or next(data) == nil then
-      vim.notify(
-        'Failed to get clients info\n' .. ret.stderr,
-        vim.log.levels.ERROR
-      )
+      utils.log('Failed to get clients info\n' .. ret.stderr, 'ERROR')
       return
     end
     for _, client in pairs(data) do
       if client.is_active then
         if #client.tabs ~= 1 or #client.tabs[1].windows ~= 1 then
-          vim.notify(
-            'Unexpected number of tabs or windows\n',
-            vim.log.levels.ERROR
-          )
+          utils.log('Unexpected number of tabs or windows\n', 'ERROR')
           return
         end
         return client.tabs[1].layout == 'stack'
@@ -322,27 +291,18 @@ multiplexer_mux_kitty.is_active = function(opt)
   local command = cmd_extend({ 'ls', '--match', 'id:' .. requested_pane_id })
   return utils.exec(command, function(ret)
     if ret.code ~= 0 then
-      vim.notify(
-        'Failed to get pane info\n' .. ret.stderr,
-        vim.log.levels.ERROR
-      )
+      utils.log('Failed to get pane info\n' .. ret.stderr, 'ERROR')
       return
     end
     local data = vim.json.decode(ret.stdout)
     if not data or next(data) == nil then
-      vim.notify(
-        'Failed to get clients info\n' .. ret.stderr,
-        vim.log.levels.ERROR
-      )
+      utils.log('Failed to get clients info\n' .. ret.stderr, 'ERROR')
       return
     end
     for _, client in pairs(data) do
       if client.is_active then
         if #client.tabs ~= 1 or #client.tabs[1].windows ~= 1 then
-          vim.notify(
-            'Unexpected number of tabs or windows\n',
-            vim.log.levels.ERROR
-          )
+          utils.log('Unexpected number of tabs or windows\n', 'ERROR')
           return
         end
         return client.tabs[1].windows[1].is_active

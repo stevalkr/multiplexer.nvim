@@ -33,6 +33,10 @@ Actions:
 - is_zoomed
 - is_active
 
+Neovim:
+- 0.10 or later
+- latest nightly
+
 ### What It Is
 
 A lightweight plugin inspired by the multiplexer support in [smart-splits.nvim](https://github.com/mrjones2014/smart-splits.nvim), but with a focus on integrating multiple multiplexers rather than enhancing Neovim's native window behavior.

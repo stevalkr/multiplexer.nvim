@@ -73,12 +73,12 @@ multiplexer_mux_i3.current_pane_id = function(opt)
   local command = cmd_extend({ '-t', 'get_tree' })
   return utils.exec(command, function(p)
     if p.code ~= 0 then
-      vim.notify('Failed to get tree info\n' .. p.stderr, vim.log.levels.ERROR)
+      utils.log('Failed to get tree info\n' .. p.stderr, 'ERROR')
       return
     end
     local data = vim.json.decode(p.stdout)
     if not data or next(data) == nil then
-      vim.notify('Failed to get tree info\n' .. p.stderr, vim.log.levels.ERROR)
+      utils.log('Failed to get tree info\n' .. p.stderr, 'ERROR')
       return
     end
     local node = find_focused(data, function(n)
@@ -93,7 +93,7 @@ end
 
 multiplexer_mux_i3.meta.pane_id = multiplexer_mux_i3.current_pane_id() or ''
 if #multiplexer_mux_i3.meta.pane_id == 0 then
-  vim.notify('Failed to get i3 pane id', vim.log.levels.ERROR)
+  utils.log('Failed to get i3 pane id', 'ERROR')
 end
 
 ---@param direction? direction
@@ -110,12 +110,10 @@ multiplexer_mux_i3.activate_pane = function(direction, opt)
   end
   utils.exec(command, function(p)
     if p.code ~= 0 then
-      vim.schedule(function()
-        vim.notify(
-          'Failed to move to pane ' .. (direction or '') .. '\n' .. p.stderr,
-          vim.log.levels.ERROR
-        )
-      end)
+      utils.log(
+        'Failed to move to pane ' .. (direction or '') .. '\n' .. p.stderr,
+        'ERROR'
+      )
     end
   end)
 end
@@ -138,17 +136,15 @@ multiplexer_mux_i3.resize_pane = function(direction, amount, opt)
   end
   utils.exec(command, function(p)
     if p.code ~= 0 then
-      vim.schedule(function()
-        vim.notify(
-          'Failed to resize pane '
-            .. direction
-            .. ' by '
-            .. amount
-            .. '\n'
-            .. p.stderr,
-          vim.log.levels.ERROR
-        )
-      end)
+      utils.log(
+        'Failed to resize pane '
+          .. direction
+          .. ' by '
+          .. amount
+          .. '\n'
+          .. p.stderr,
+        'ERROR'
+      )
     end
   end)
 end
@@ -156,7 +152,7 @@ end
 ---@param direction direction
 ---@param opt? multiplexer.opt
 multiplexer_mux_i3.split_pane = function(direction, opt)
-  vim.notify('i3wm does not support splitting pane', vim.log.levels.ERROR)
+  utils.log('i3wm does not support splitting pane', 'ERROR')
 end
 
 ---@param text string
@@ -168,12 +164,7 @@ multiplexer_mux_i3.send_text = function(text, opt)
   end
   utils.exec(command, function(p)
     if p.code ~= 0 then
-      vim.schedule(function()
-        vim.notify(
-          'Failed to send text to pane\n' .. p.stderr,
-          vim.log.levels.ERROR
-        )
-      end)
+      utils.log('Failed to send text to pane\n' .. p.stderr, 'ERROR')
     end
   end)
 end
@@ -186,9 +177,9 @@ multiplexer_mux_i3.is_blocked_on = function(direction, opt)
   if
     utils.exec(command, function(p)
       if p.code ~= 0 then
-        vim.notify(
+        utils.log(
           'Failed to move to pane ' .. (direction or '') .. '\n' .. p.stderr,
-          vim.log.levels.ERROR
+          'ERROR'
         )
         return true
       end
@@ -209,9 +200,9 @@ multiplexer_mux_i3.is_blocked_on = function(direction, opt)
   if
     utils.exec(command, function(p)
       if p.code ~= 0 then
-        vim.notify(
+        utils.log(
           'Failed to move to pane ' .. direction .. '\n' .. p.stderr,
-          vim.log.levels.ERROR
+          'ERROR'
         )
         return true
       end
@@ -232,11 +223,11 @@ multiplexer_mux_i3.is_zoomed = function(opt)
   local command = cmd_extend({ '-t', 'get_tree' })
   return utils.exec(command, function(p)
     if p.code ~= 0 then
-      vim.notify('Failed to get tree info\n' .. p.stderr, vim.log.levels.ERROR)
+      utils.log('Failed to get tree info\n' .. p.stderr, 'ERROR')
     end
     local data = vim.json.decode(p.stdout)
     if not data or next(data) == nil then
-      vim.notify('Failed to get tree info\n' .. p.stderr, vim.log.levels.ERROR)
+      utils.log('Failed to get tree info\n' .. p.stderr, 'ERROR')
     end
     local node = find_focused(data, function(n)
       if opt and opt.id then
@@ -258,11 +249,11 @@ multiplexer_mux_i3.is_active = function(opt)
   local command = cmd_extend({ '-t', 'get_tree' })
   return utils.exec(command, function(p)
     if p.code ~= 0 then
-      vim.notify('Failed to get tree info\n' .. p.stderr, vim.log.levels.ERROR)
+      utils.log('Failed to get tree info\n' .. p.stderr, 'ERROR')
     end
     local data = vim.json.decode(p.stdout)
     if not data or next(data) == nil then
-      vim.notify('Failed to get tree info\n' .. p.stderr, vim.log.levels.ERROR)
+      utils.log('Failed to get tree info\n' .. p.stderr, 'ERROR')
     end
     local node = find_focused(data, function(n)
       return tostring(n.id)

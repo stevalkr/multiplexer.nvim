@@ -1,4 +1,4 @@
-*multiplexer.txt*                                    Last change: 2025 June 03
+*multiplexer.txt*                                    Last change: 2025 June 24
 
 ==============================================================================
 Table of Contents                              *multiplexer-table-of-contents*
@@ -69,6 +69,10 @@ Actions:
 - is_blocked_on
 - is_zoomed
 - is_active
+Neovim:
+
+- 0.10 or later
+- latest nightly
 
                                                                               
 WHAT IT IS                                            *multiplexer-what-it-is*
