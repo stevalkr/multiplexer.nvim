@@ -20,8 +20,8 @@ end
 local apply_opt = function(command, opt)
   if opt then
     if opt.id then
-      table.insert(command, '--match')
-      table.insert(command, 'id:' .. opt.id)
+      table.insert(command, 6, '--match')
+      table.insert(command, 7, 'id:' .. opt.id)
     end
     if opt.dry_run then
       io.stdout:write(table.concat(command, ' ') .. '\n')
@@ -48,13 +48,9 @@ end
 ---@param opt? multiplexer.opt
 ---@return string|nil
 multiplexer_mux_kitty.current_pane_id = function(opt)
-  if opt and opt.dry_run then
-    io.stdout:write('echo Dry run not implemented yet\n')
-    return
-  end
   local command =
     cmd_extend({ 'ls', '--match', 'state:active and state:parent_active' })
-  return utils.exec(command, function(p)
+  local pane_id = utils.exec(command, function(p)
     if p.code ~= 0 then
       utils.log('Failed to get clients info\n' .. p.stderr, 'ERROR')
       return
@@ -74,6 +70,10 @@ multiplexer_mux_kitty.current_pane_id = function(opt)
       end
     end
   end, { async = false })
+  if opt and opt.dry_run then
+    io.stdout:write('echo ' .. pane_id)
+  end
+  return pane_id
 end
 
 ---@param direction? direction
