@@ -35,31 +35,19 @@ nvim_exec() {
 # Wrapper to get the current terminal pane ID
 # Usage: current_pane_id <mux>
 current_pane_id() {
-  local mux
-  if [[ -n "$1" ]]; then
-    mux="$1"
-  else
-    mux="$TERMINAL"
-  fi
-  eval $(nvim_exec "require('multiplexer.mux.$mux').current_pane_id({ dry_run = true })")
+  eval $(nvim_exec "require('multiplexer.mux.$TERMINAL').current_pane_id({ dry_run = true })")
 }
 
 # Wrapper to send text to the active pane by using the plugin's send_text
-# Usage: term_send_text <text> <mux>
+# Usage: term_send_text <text>
 term_send_text() {
   local text="$1"
-  local mux
-  if [[ -n "$2" ]]; then
-    mux="$2"
-  else
-    mux="$TERMINAL"
-  fi
-  nvim_exec "require('multiplexer.mux.$mux').send_text([[$text]], { id = '$(current_pane_id $mux)', async = false })"
+  nvim_exec "require('multiplexer.mux.$TERMINAL').send_text([[$text]], { id = '$(current_pane_id)', async = false })"
 }
 
 start_tmux() {
   TMUX=/tmp/tmux-e2e-test.socket
-  tmux kill-session -t e2e-test 2>/dev/null || true
+  tmux -S $TMUX kill-session -t e2e-test 2>/dev/null || true
   term_send_text "tmux -S $TMUX new-session -s e2e-test ';' \
                     bind-key -n C-h \"if -F '#{@pane-is-vim}' { send-keys C-h } { run-shell '/tmp/multiplexer activate_pane left' }\"  ';' \
                     bind-key -n C-j \"if -F '#{@pane-is-vim}' { send-keys C-j } { run-shell '/tmp/multiplexer activate_pane down' }\"  ';' \
@@ -108,7 +96,8 @@ run_tests() {
 
   # 2. Split native terminal pane to the right
   info "Splitting $TERMINAL pane..."
-  nvim_exec "require('multiplexer.mux.$TERMINAL').split_pane('l', { id = '$(current_pane_id $TERMINAL)' })"
+  # Command not running in active pane, set id manually
+  nvim_exec "require('multiplexer.mux.$TERMINAL').split_pane('l', { id = '$(current_pane_id)' })"
   sleep 1
 
   # 3. In the right pane, start tmux
@@ -118,12 +107,8 @@ run_tests() {
 
   # 4. Split tmux pane to the right
   info "Splitting tmux pane..."
-  term_send_text "nvim -u NONE --headless \
-                    -c 'set rtp+=$CWD' \
-                    -c 'lua require(\"multiplexer\").setup()' \
-                    -c 'lua require(\"multiplexer.mux.tmux\").split_pane(\"l\", { id = \"$(current_pane_id tmux)\" })' \
-                    -c 'qa' \
-                  "
+  # Command not running in TMUX, set $TMUX manually
+  nvim_exec "vim.fn.setenv('TMUX', '$TMUX,'); require('multiplexer.mux.tmux').split_pane('l')"
   sleep 1
 
   # 5. In the right tmux pane, start nvim (will be tmux_nvim)
@@ -147,7 +132,6 @@ run_tests() {
   info "--- Starting Navigation Verification ---"
 
   # Navigate right (from terminal to tmux)
-  info "Navigating RIGHT ($TERMINAL -> tmux)..."
   term_send_text ""
   sleep 1
   term_send_text ""
@@ -157,7 +141,6 @@ run_tests() {
   assert_eq "$active_nvim" "tmux_nvim" "Focus should switch to tmux nvim."
 
   # Navigate left (from tmux to terminal)
-  info "Navigating LEFT (tmux -> $TERMINAL)..."
   term_send_text ""
   sleep 1
   term_send_text ""
