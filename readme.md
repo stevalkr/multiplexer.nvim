@@ -168,65 +168,29 @@ For more detailed info, please refer to the source code.
 
 <details>
 
-Save this script in your `$PATH`, e.g., as `multiplexer`. Also available under `scripts/`
+This command will download script `scripts/multiplexer` to `/usr/local/bin/multiplexer`. You may change the path to anywhere in your `$PATH`.
 
 ```bash
-#!/usr/bin/env bash
+sudo wget https://raw.githubusercontent.com/stevalkr/multiplexer.nvim/refs/heads/main/scripts/multiplexer -O /usr/local/bin/multiplexer
+```
 
-export MULTIPLEXER=1
-
-get_vim_direction() {
-    case $1 in
-        left) echo 'h'
-        ;;
-        down) echo 'j'
-        ;;
-        up) echo 'k'
-        ;;
-        right) echo 'l'
-        ;;
-        *) return 1
-        ;;
-    esac
+For NixOS, add the following to `/etc/nixos/configuration.nix`:
+```nix
+{ pkgs, ... }: {
+  environment.systemPackages = with pkgs; [
+    (runCommand "multiplexer-nvim" { } ''
+      script_path=${
+        pkgs.fetchurl {
+          url = "https://raw.githubusercontent.com/stevalkr/multiplexer.nvim/refs/heads/main/scripts/multiplexer";
+          hash = "sha256-AsDLb8uX3XF9n94cDK04QKbTHf6SVcdkI59bHsqCVzc=";
+        }
+      }
+      mkdir -p $out/bin
+      cp $script_path $out/bin/multiplexer
+      chmod +x $out/bin/multiplexer
+    '')
+  ];
 }
-
-activate_pane() {
-    local dir=$(get_vim_direction "$1")
-    if [ -z "$dir" ]; then
-        return 1
-    fi
-    nvim --headless -c ":lua require('multiplexer').activate_pane('$dir')" -c ":qa"
-}
-
-resize_pane() {
-    local dir=$(get_vim_direction "$1")
-    if [ -z "$dir" ]; then
-        return 1
-    fi
-    nvim --headless -c ":lua require('multiplexer').resize_pane('$dir')" -c ":qa"
-}
-
-i3() {
-    local windowid=$(xdotool getactivewindow)
-    local instance=$(xprop -id "$windowid" WM_CLASS | awk -F '"' '{print $2}')
-    case "$instance" in
-        "org.wezfurlong.wezterm" | "kitty")
-        i3-msg mode passthrough_mode && sleep 0.2 && xdotool key --window "$windowid" "$1" Escape
-        ;;
-        *)
-        MULTIPLEXER_LIST="i3" "$2" "$3"
-        ;;
-    esac
-}
-
-main_command="$1"
-if [ -z "$main_command" ]; then
-    echo "Usage: $0 [activate_pane|resize_pane] [left|down|up|right]"
-    exit 1
-fi
-shift
-
-"$main_command" "$@"
 ```
 
 Run commands like `multiplexer activate_pane left` or `multiplexer resize_pane right` from your multiplexer configs.
@@ -568,6 +532,8 @@ map --when-focus-on "var:IS_NVIM=true or var:IS_TMUX=true or var:IS_ZELLIJ" ctrl
 ### i3wm
 
 <details>
+
+`xdotool` is a necessary dependency for i3 integration, install it via your package manager.
 
 Integrate with i3wm by adding this to `~/.config/i3/config`:
 
