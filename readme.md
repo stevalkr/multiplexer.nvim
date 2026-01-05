@@ -170,6 +170,8 @@ For more detailed info, please refer to the source code.
 
 This command will download script `scripts/multiplexer` to `/usr/local/bin/multiplexer`. You may change the path to anywhere in your `$PATH`.
 
+Make sure `multiplexer` and `nvim` is accessible in your shell (e.g. `bash -ilc 'multiplexer activate_pane left'`). For MacOS users, you may add `eval "$(/opt/homebrew/bin/brew shellenv)"` to `~/.bash_profile`.
+
 ```bash
 sudo wget https://raw.githubusercontent.com/stevalkr/multiplexer.nvim/refs/heads/main/scripts/multiplexer -O /usr/local/bin/multiplexer
 ```
@@ -286,6 +288,13 @@ bind-key -T copy-mode-vi C-S-h if -F '#{@pane-is-vim}' { send-keys C-S-h } { run
 bind-key -T copy-mode-vi C-S-j if -F '#{@pane-is-vim}' { send-keys C-S-j } { run-shell 'multiplexer resize_pane down' }
 bind-key -T copy-mode-vi C-S-k if -F '#{@pane-is-vim}' { send-keys C-S-k } { run-shell 'multiplexer resize_pane up' }
 bind-key -T copy-mode-vi C-S-l if -F '#{@pane-is-vim}' { send-keys C-S-l } { run-shell 'multiplexer resize_pane right' }
+
+## Auto-update environment variables
+set -g update-environment "MULTIPLEXER MULTIPLEXER_LIST \
+                           I3SOCK \
+                           ZELLIJ_PANE_ID ZELLIJ \
+                           KITTY_WINDOW_ID KITTY_LISTEN_ON KITTY_PID \
+                           WEZTERM_PANE WEZTERM_UNIX_SOCKET WEZTERM_EXECUTABLE"
 ```
 
 For automatic detection in shell, add:
@@ -339,7 +348,7 @@ fish:
 ## ~/.config/fish/config.fish
 if set -q TMUX
     function renew_env --on-event fish_focus_in
-        set -l vars_to_sync MULTIPLEXER MULTIPLEXAER_LIST \
+        set -l vars_to_sync MULTIPLEXER MULTIPLEXER_LIST \
             I3SOCK \
             ZELLIJ_PANE_ID ZELLIJ \
             KITTY_WINDOW_ID KITTY_LISTEN_ON KITTY_PID \
@@ -450,7 +459,7 @@ local activate_pane = function(opts, direction)
     if pane:get_user_vars().IS_NVIM == 'true' or pane:get_user_vars().IS_TMUX == 'true' or pane:get_user_vars().IS_ZELLIJ == 'true' then
       win:perform_action({ SendKey = { key = opts.key, mods = opts.mods } }, pane)
     else
-      wezterm.background_child_process({ 'bash', '-ilc', -- For macOS users, use zsh instead
+      wezterm.background_child_process({ 'bash', '-ilc',
         'multiplexer activate_pane ' .. direction
       })
     end
@@ -466,7 +475,7 @@ local adjust_pane = function(opts, direction, amount)
     if pane:get_user_vars().IS_NVIM == 'true' or pane:get_user_vars().IS_TMUX == 'true' or pane:get_user_vars().IS_ZELLIJ == 'true' then
       win:perform_action({ SendKey = { key = opts.key, mods = opts.mods } }, pane)
     else
-      wezterm.background_child_process({ 'bash', '-ilc', -- For macOS users, use zsh instead
+      wezterm.background_child_process({ 'bash', '-ilc',
         'multiplexer resize_pane ' .. direction
       })
     end
@@ -507,7 +516,6 @@ allow_remote_control  yes
 listen_on             unix:${TEMP}/mykitty     # or unix:@mykitty on Linux
 env                   MULTIPLEXER_LIST=kitty,i3
 
-## For macOS users, use zsh instead
 map ctrl+h          launch --copy-env --keep-focus --type background bash -ilc "multiplexer activate_pane left"
 map ctrl+j          launch --copy-env --keep-focus --type background bash -ilc "multiplexer activate_pane down"
 map ctrl+k          launch --copy-env --keep-focus --type background bash -ilc "multiplexer activate_pane up"
